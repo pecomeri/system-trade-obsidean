@@ -1,6 +1,6 @@
 ---
 regime: london_active + h1_trend_aligned + session_W1_only
-strategy: topdown_trend_trigger + m1_signal_to_10s_entry
+strategy: failed_breakout_reversal + 10s_execution
 result: conditional
 ---
 
@@ -77,4 +77,87 @@ dv.table(
 );
 ```
 
-理由：フォワード（2025）が baseline（B001）より損失が小さく、条件差分としては「悪化していない」（`-384 → -132`）
+理由：フォワード（2025）がプラス（`sum_pnl_pips=+190`）で、baseline（B001）より改善
+
+## 月次PnL分布の読み（B002 / 2025 forward）
+
+見たいこと：
+- 利益が特定の月に偏っていないか（少数の月だけで総利益を作っていないか）
+- 負け月の形が再現的か（毎回似た負け方なのか、単発の事故なのか）
+
+### 月次PnLテーブル（CSV参照）
+
+```dataviewjs
+const path = "results/family_B_failedbreakout/B002/forward_2025/monthly.csv";
+const data = await dv.io.csv(path);
+const rows = (data && typeof data.array === "function")
+  ? data.array()
+  : (Array.isArray(data) ? data : (data?.values ?? []));
+
+function num(x) {
+  const v = Number(x);
+  return Number.isFinite(v) ? v : 0;
+}
+
+const m = rows.map(r => ({
+  month: r.month,
+  trades: num(r.trades),
+  sum_pnl_pips: num(r.sum_pnl_pips),
+  avg_pnl_pips: num(r.avg_pnl_pips),
+  winrate: num(r.winrate),
+})).sort((a,b) => String(a.month).localeCompare(String(b.month)));
+
+dv.table(
+  ["month","trades","sum_pnl_pips","avg_pnl_pips","winrate"],
+  m.map(r => [r.month, r.trades, r.sum_pnl_pips.toFixed(1), r.avg_pnl_pips.toFixed(3), r.winrate.toFixed(3)])
+);
+```
+
+### 偏りチェック（上位月の寄与 / 負け月の並び）
+
+```dataviewjs
+const path = "results/family_B_failedbreakout/B002/forward_2025/monthly.csv";
+const data = await dv.io.csv(path);
+const rows = (data && typeof data.array === "function")
+  ? data.array()
+  : (Array.isArray(data) ? data : (data?.values ?? []));
+
+function num(x) {
+  const v = Number(x);
+  return Number.isFinite(v) ? v : 0;
+}
+
+const m = rows.map(r => ({ month: r.month, pnl: num(r.sum_pnl_pips), trades: num(r.trades) }));
+const total = m.reduce((a, r) => a + r.pnl, 0);
+const pos = m.filter(r => r.pnl > 0).sort((a,b) => b.pnl - a.pnl);
+const neg = m.filter(r => r.pnl < 0).sort((a,b) => a.pnl - b.pnl);
+
+function topShare(k) {
+  const s = pos.slice(0, k).reduce((a, r) => a + r.pnl, 0);
+  return total !== 0 ? s / total : 0;
+}
+
+dv.header(3, "上位月寄与（pnlがプラスの月のみ）");
+dv.table(
+  ["metric", "value"],
+  [
+    ["total_pnl_pips", total.toFixed(1)],
+    ["positive_months", String(pos.length)],
+    ["negative_months", String(neg.length)],
+    ["top1_share_of_total", topShare(1).toFixed(3)],
+    ["top2_share_of_total", topShare(2).toFixed(3)],
+    ["top3_share_of_total", topShare(3).toFixed(3)],
+  ]
+);
+
+dv.header(3, "ワースト月（負け月の形）");
+dv.table(
+  ["rank","month","sum_pnl_pips","trades"],
+  neg.slice(0, 6).map((r, i) => [i+1, r.month, r.pnl.toFixed(1), r.trades])
+);
+```
+
+読み方（目安）：
+- `top1/top2/top3_share_of_total` が 1.0 に近いほど「特定の月に偏る」。
+- ワースト月が少数で、他が小さな負け/勝ちなら「事故月に依存」。
+- ワースト月が複数あり、毎回似た規模で負けるなら「負け月の形が再現的（＝構造的な欠陥が残っている）」可能性が高い。

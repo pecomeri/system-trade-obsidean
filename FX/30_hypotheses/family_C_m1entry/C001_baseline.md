@@ -1,15 +1,25 @@
 ---
 regime: london_active + h1_trend_aligned
-strategy: topdown_trend_trigger + m1_signal_to_10s_entry
+strategy: m1_close_trigger + 10s_execution
 result: dead
 ---
 
 baseline（C001）：
-- 現行 `backtest_core.py` の基準ロジックをそのまま使用（数値パラメータ変更なし）
+- **M1足の確定を主トリガー**にする（A001は10秒足ブレイクが主トリガー）
+  - M1の高値レンジを、M1の終値で上抜けた時にエントリー条件成立
+  - 10秒足は「次のopenで約定する」ための執行補助のみ
+- bias の扱いを変更（A001と構造が異なる）
+  - A001: 「高TFのブレイク」で bias=+1/-1 を作る
+  - C001: **直近の確定M1が陽線（close>open）なら bias=+1、そうでなければ0** として事故抑制に使う
+- H1 / time filter は事故抑制として維持（数値パラメータ変更なし）
 
 検証：
 - 2024 verify / 2025 forward
 - 出力: `results/family_C_m1entry/C001/`
+
+差分仮説：
+- C002: `only_session=W1` のみ
+- C003: `use_h1_trend_filter=False` のみ
 
 ## 結果（DataviewでCSV参照）
 
@@ -77,4 +87,4 @@ dv.table(
 );
 ```
 
-理由：フォワード（2025）の合計PnLが負（`sum_pnl_pips=-384`）で、現状のままでは条件付きでも筋が見えにくい
+理由：フォワード（2025）が負のまま（`sum_pnl_pips=-462`）で、現状は条件付きでも筋が弱い

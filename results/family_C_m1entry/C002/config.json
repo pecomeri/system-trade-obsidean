@@ -7,16 +7,16 @@
   "verify": {
     "from_month": "2024-01",
     "to_month": "2024-12",
-    "run_dir": "results/c002_sess_W1_2024-01_2024-12_20251216_061433",
-    "sum_pnl_pips": -403.9999999997917,
-    "trades": 399
+    "run_dir": "results/c002_sess_W1_2024-01_2024-12_20251216_073113",
+    "sum_pnl_pips": -515.9999999997751,
+    "trades": 430
   },
   "forward": {
     "from_month": "2025-01",
     "to_month": "2025-12",
-    "run_dir": "results/c002_sess_W1_2025-01_2025-12_20251216_061450",
-    "sum_pnl_pips": -131.9999999998288,
-    "trades": 330
+    "run_dir": "results/c002_sess_W1_2025-01_2025-12_20251216_073130",
+    "sum_pnl_pips": -323.9999999998133,
+    "trades": 358
   },
   "diff": {
     "only_session": "W1",

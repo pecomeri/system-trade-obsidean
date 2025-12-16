@@ -1,6 +1,6 @@
 ---
 regime: london_active + h1_trend_aligned + session_W1_only
-strategy: topdown_trend_trigger + m1_signal_to_10s_entry
+strategy: m1_close_trigger + 10s_execution
 result: conditional
 ---
 
@@ -77,4 +77,4 @@ dv.table(
 );
 ```
 
-理由：フォワード（2025）が baseline（C001）より損失が小さく、条件差分としては「悪化していない」（`-384 → -132`）
+理由：フォワード（2025）が baseline（C001）より改善（`-462 → -324`）で、条件差分として検討余地あり

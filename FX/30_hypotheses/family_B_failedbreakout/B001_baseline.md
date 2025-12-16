@@ -1,11 +1,18 @@
 ---
 regime: london_active + h1_trend_aligned
-strategy: topdown_trend_trigger + m1_signal_to_10s_entry
-result: dead
+strategy: failed_breakout_reversal + 10s_execution
+result: conditional
 ---
 
 baseline（B001）：
-- 現行 `backtest_core.py` の基準ロジックをそのまま使用（数値パラメータ変更なし）
+- **失敗ブレイク前提の逆方向エントリー**（A001はブレイク成立方向でエントリー）
+  - 10秒足で「下抜けブレイク（直近レンジ安値を下抜け）」が起きた後、**次の10秒足で否定（レンジ内へ回帰）**したらロング
+  - 2段階（成立→否定）を条件にするため、エントリー構造がA001と異なる
+- bias / H1 / time filter は事故抑制としてそのまま使用（数値パラメータ変更なし）
+
+差分仮説：
+- B002: `only_session=W1` のみ
+- B003: `use_h1_trend_filter=False` のみ
 
 検証：
 - 2024 verify / 2025 forward
@@ -77,4 +84,4 @@ dv.table(
 );
 ```
 
-理由：フォワード（2025）の合計PnLが負（`sum_pnl_pips=-384`）で、現状のままでは条件付きでも筋が見えにくい
+理由：フォワード（2025）がほぼフラット（`sum_pnl_pips=-2`）で、改善の余地はあるが再現性は未確定

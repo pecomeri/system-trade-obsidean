@@ -1,6 +1,6 @@
 ---
 regime: london_active
-strategy: topdown_trend_trigger + m1_signal_to_10s_entry
+strategy: m1_close_trigger + 10s_execution
 result: dead
 ---
 
@@ -77,4 +77,4 @@ dv.table(
 );
 ```
 
-理由：H1フィルターを外すとフォワードが baseline（C001）より明確に悪化（`-384 → -672`）したため
+理由：H1フィルターを外すとフォワードが baseline（C001）より悪化（`-462 → -642`）し、事故抑制としてH1が必要そう
