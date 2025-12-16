@@ -1,0 +1,236 @@
+{
+  "main": {
+    "id": "aa9fa00249495a50",
+    "type": "split",
+    "children": [
+      {
+        "id": "db5d93af78f4701f",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "bb5df2dd15eca2ba",
+            "type": "leaf",
+            "state": {
+              "type": "empty",
+              "state": {},
+              "icon": "lucide-file",
+              "title": "新規タブ"
+            }
+          }
+        ]
+      },
+      {
+        "id": "ab734ad87e2445a8",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "17cc65a0d7ea4b1d",
+            "type": "leaf",
+            "state": {
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "グラフビュー"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "2102e001ed5e3c7d",
+    "type": "split",
+    "children": [
+      {
+        "id": "053f69a817db8685",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "f59f1bb2e1fdaa14",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "ファイルエクスプローラ"
+            }
+          },
+          {
+            "id": "c06e70ddf4ec2466",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "検索"
+            }
+          },
+          {
+            "id": "6af89bc1b85e7d20",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "ブックマーク"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "5cdee1e2d6a9e3f2",
+    "type": "split",
+    "children": [
+      {
+        "id": "4cfee30e2bf22f6b",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "41aa6ab96f9678df",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "バックリンク"
+            }
+          },
+          {
+            "id": "61fcc9dbf066328f",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "Welcome.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Welcomeからのアウトゴーイングリンク"
+            }
+          },
+          {
+            "id": "d99cc292a3163c8a",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "タグ"
+            }
+          },
+          {
+            "id": "14d812c77c8eeebd",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "すべてのプロパティ"
+            }
+          },
+          {
+            "id": "10ebace33efd069e",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Welcome.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Welcomeのアウトライン"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:クイックスイッチャーを開く": false,
+      "graph:グラフビューを開く": false,
+      "canvas:新規キャンバスを作成": false,
+      "daily-notes:今日のデイリーノートを開く": false,
+      "templates:テンプレートを挿入": false,
+      "command-palette:コマンドパレットを開く": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "f59f1bb2e1fdaa14",
+  "lastOpenFiles": [
+    "FX/code/backtest_runner.py",
+    "FX/code/backtest_core.py",
+    "FX/30_hypotheses/family_A_breakout/A005：時間帯なし（ロンドンフィルターの価値を測る）.md",
+    "FX/30_hypotheses/family_A_breakout/A004：M1なし（10秒トリガーの“単体性能”を見る）.md",
+    "FX/30_hypotheses/family_A_breakout/A003：H1なし（上位足フィルターの価値を測る）.md",
+    "FX/30_hypotheses/family_A_breakout/A002：板フィルターあり（最後の地雷回避）.md",
+    "FX/30_hypotheses/family_A_breakout/A001：ベースライン（板フィルターなし）.md",
+    "FX/30_hypotheses/family_A_breakout/hyp_005：時間帯なし（ロンドンフィルターの価値を測る）.md",
+    "FX/30_hypotheses/family_A_breakout/hyp_004：M1なし（10秒トリガーの“単体性能”を見る）.md",
+    "FX/30_hypotheses/family_A_breakout/hyp_003：H1なし（上位足フィルターの価値を測る）.md",
+    "FX/30_hypotheses/family_A_breakout/hyp_002：板フィルターあり（最後の地雷回避）.md",
+    "FX/30_hypotheses/family_A_breakout/hyp_001：ベースライン（板フィルターなし）.md",
+    "FX/30_hypotheses/family_A_breakout",
+    "FX/code",
+    "code",
+    "FX/00_Index/全体状況まとめ.md",
+    "FX/00_Index",
+    "FX/20_strategies/m1_signal_to_10s_entry.md",
+    "FX/20_strategies/orderbook_as_last_filter.md",
+    "FX/20_strategies/momentum_burst.md",
+    "FX/20_strategies/volume_imbalance_trigger.md",
+    "FX/20_strategies/topdown_trend_trigger.md",
+    "FX/20_strategies/pullback_quick_continuation.md",
+    "FX/20_strategies/pullback_continuation.md",
+    "FX/20_strategies/micro_trend_control_filter.md",
+    "FX/20_strategies/00_プロンプト.md",
+    "FX/20_strategies",
+    "FX/V字.md",
+    "FX/5分1分足.md",
+    "FX/99_logs/2025-12-15.md",
+    "FX/99_logs",
+    "FX/30_hypotheses/hyp_005：時間帯なし（ロンドンフィルターの価値を測る）.md",
+    "FX/30_hypotheses/hyp_004：M1なし（10秒トリガーの“単体性能”を見る）.md",
+    "FX/30_hypotheses",
+    "FX/10_regimes",
+    "FX"
+  ]
+}
