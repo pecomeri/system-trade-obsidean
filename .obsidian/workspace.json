@@ -11,26 +11,14 @@
             "id": "bb5df2dd15eca2ba",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "FX/30_hypotheses/family_C_m1entry/C001_baseline.md",
+                "mode": "source",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "新規タブ"
-            }
-          }
-        ]
-      },
-      {
-        "id": "ab734ad87e2445a8",
-        "type": "tabs",
-        "children": [
-          {
-            "id": "17cc65a0d7ea4b1d",
-            "type": "leaf",
-            "state": {
-              "type": "graph",
-              "state": {},
-              "icon": "lucide-git-fork",
-              "title": "グラフビュー"
+              "title": "C001_baseline"
             }
           }
         ]
@@ -106,6 +94,7 @@
             "state": {
               "type": "backlink",
               "state": {
+                "file": "FX/30_hypotheses/family_C_m1entry/C001_baseline.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -115,7 +104,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "バックリンク"
+              "title": "C001_baselineへのバックリンク"
             }
           },
           {
@@ -194,43 +183,42 @@
       "bases:Create new base": false
     }
   },
-  "active": "f59f1bb2e1fdaa14",
+  "active": "bb5df2dd15eca2ba",
   "lastOpenFiles": [
-    "FX/code/backtest_runner.py",
-    "FX/code/backtest_core.py",
+    "FX/30_hypotheses/family_B_failedbreakout/B003_no_h1_filter.md",
+    "FX/30_hypotheses/family_B_failedbreakout/B001_baseline-A001の反対でブレイクアウトの失敗.md",
+    "FX/30_hypotheses/family_B_failedbreakout/B002_W1_only.md",
     "FX/30_hypotheses/family_A_breakout/A005：時間帯なし（ロンドンフィルターの価値を測る）.md",
+    "results/summary_family_BC.csv",
+    "results/family_C_m1entry/C003/config.json",
+    "results/family_C_m1entry/C003/monthly_by_session.csv",
+    "results/family_C_m1entry/C003/monthly.csv",
+    "results/family_C_m1entry/C003/core_config.json",
+    "results/family_C_m1entry/C003/forward_2025/monthly_by_session.csv",
+    "results/family_C_m1entry/C003/forward_2025/monthly.csv",
+    "results/family_C_m1entry/C003/forward_2025/core_config.json",
+    "results/family_C_m1entry/C003/forward_2025",
+    "results/c003_2025-01_2025-12_20251216_061521/monthly_by_session.csv",
+    "FX/30_hypotheses/family_C_m1entry/C003_no_h1_filter.md",
+    "FX/30_hypotheses/family_C_m1entry/C002_W1_only.md",
+    "FX/30_hypotheses/family_C_m1entry/C001_baseline.md",
     "FX/30_hypotheses/family_A_breakout/A004：M1なし（10秒トリガーの“単体性能”を見る）.md",
+    "FX/20_strategies/topdown_trend_trigger.md",
+    "FX/30_hypotheses/family_A_breakout/A001：ベースライン（板フィルターなし）.md",
     "FX/30_hypotheses/family_A_breakout/A003：H1なし（上位足フィルターの価値を測る）.md",
     "FX/30_hypotheses/family_A_breakout/A002：板フィルターあり（最後の地雷回避）.md",
-    "FX/30_hypotheses/family_A_breakout/A001：ベースライン（板フィルターなし）.md",
+    "FX/30_hypotheses/family_A_breakout/A002_W2_only.md",
+    "FX/30_hypotheses/family_A_breakout/A001_2024-2025_results.md",
+    "Welcome.md",
+    "AGENTS.md",
     "FX/30_hypotheses/family_A_breakout/hyp_005：時間帯なし（ロンドンフィルターの価値を測る）.md",
     "FX/30_hypotheses/family_A_breakout/hyp_004：M1なし（10秒トリガーの“単体性能”を見る）.md",
     "FX/30_hypotheses/family_A_breakout/hyp_003：H1なし（上位足フィルターの価値を測る）.md",
     "FX/30_hypotheses/family_A_breakout/hyp_002：板フィルターあり（最後の地雷回避）.md",
     "FX/30_hypotheses/family_A_breakout/hyp_001：ベースライン（板フィルターなし）.md",
-    "FX/30_hypotheses/family_A_breakout",
-    "FX/code",
-    "code",
     "FX/00_Index/全体状況まとめ.md",
-    "FX/00_Index",
     "FX/20_strategies/m1_signal_to_10s_entry.md",
     "FX/20_strategies/orderbook_as_last_filter.md",
-    "FX/20_strategies/momentum_burst.md",
-    "FX/20_strategies/volume_imbalance_trigger.md",
-    "FX/20_strategies/topdown_trend_trigger.md",
-    "FX/20_strategies/pullback_quick_continuation.md",
-    "FX/20_strategies/pullback_continuation.md",
-    "FX/20_strategies/micro_trend_control_filter.md",
-    "FX/20_strategies/00_プロンプト.md",
-    "FX/20_strategies",
-    "FX/V字.md",
-    "FX/5分1分足.md",
-    "FX/99_logs/2025-12-15.md",
-    "FX/99_logs",
-    "FX/30_hypotheses/hyp_005：時間帯なし（ロンドンフィルターの価値を測る）.md",
-    "FX/30_hypotheses/hyp_004：M1なし（10秒トリガーの“単体性能”を見る）.md",
-    "FX/30_hypotheses",
-    "FX/10_regimes",
-    "FX"
+    "FX/20_strategies/momentum_burst.md"
   ]
 }

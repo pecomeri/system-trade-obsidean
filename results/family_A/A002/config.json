@@ -1,0 +1,22 @@
+{
+  "family": "family_A",
+  "hyp": "A002",
+  "symbol": "USDJPY",
+  "root": "FX/code/dukas_out_v2",
+  "spread_pips": 1.0,
+  "verify": {
+    "from_month": "2024-01",
+    "to_month": "2024-12",
+    "run_dir": "results/hyp002_sess_W2_2024-01_2024-12_20251216_040149",
+    "pnl_sum_pips": -537.9999999997636
+  },
+  "forward": {
+    "from_month": "2025-01",
+    "to_month": "2025-12",
+    "run_dir": "results/hyp002_sess_W2_2025-01_2025-12_20251216_040206",
+    "pnl_sum_pips": -411.99999999981856
+  },
+  "diff": {
+    "only_session": "W2"
+  }
+}

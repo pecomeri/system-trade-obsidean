@@ -1,0 +1,7 @@
+family,hyp,delta,verify_sum_pnl_pips,verify_trades,forward_sum_pnl_pips,forward_trades,judge
+family_B_failedbreakout,B001,baseline,-635.999999999666,640,-383.99999999971897,540,dead
+family_B_failedbreakout,B002,only_session=W1,-403.9999999997917,399,-131.9999999998288,330,conditional
+family_B_failedbreakout,B003,use_h1_trend_filter=False,-879.9999999994611,1034,-671.9999999994627,1033,dead
+family_C_m1entry,C001,baseline,-635.999999999666,640,-383.99999999971897,540,dead
+family_C_m1entry,C002,only_session=W1,-403.9999999997917,399,-131.9999999998288,330,conditional
+family_C_m1entry,C003,use_h1_trend_filter=False,-879.9999999994611,1034,-671.9999999994627,1033,dead
