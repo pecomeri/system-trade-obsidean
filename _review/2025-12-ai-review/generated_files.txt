@@ -1,0 +1,17 @@
+Generated files under _review/2025-12-ai-review:
+_review/2025-12-ai-review/generated_files.txt
+_review/2025-12-ai-review/README.md
+_review/2025-12-ai-review/review_context.md
+_review/2025-12-ai-review/samples/00_Index/research_map_setup_entry_filter.md
+_review/2025-12-ai-review/samples/00_Index/全体状況まとめ.md
+_review/2025-12-ai-review/samples/10_regimes/execution_ok_500ms.md
+_review/2025-12-ai-review/samples/10_regimes/h1_trend_up.md
+_review/2025-12-ai-review/samples/15_setups/00_プロンプト.md
+_review/2025-12-ai-review/samples/15_setups/S-001_trend_midrange_fakeout_v.md
+_review/2025-12-ai-review/samples/20_strategies/m1_signal_to_10s_entry.md
+_review/2025-12-ai-review/samples/20_strategies/orderbook_as_last_filter.md
+_review/2025-12-ai-review/samples/25_entries/E-A001_immediate.md
+_review/2025-12-ai-review/samples/25_entries/E-B001_rebreak_confirm.md
+_review/2025-12-ai-review/samples/27_filters/00_プロンプト.md
+_review/2025-12-ai-review/samples/27_filters/F-C001_no_rebreak.md
+_review/2025-12-ai-review/tree_fx.txt

@@ -1,0 +1,14 @@
+experiment_id,family,baseline_id,variant_id,change_one_thing,hypothesis,in_sample_period,verify_period,forward_period,status,frozen_at,forward_viewed_at,note_path,result_path
+B001,family_B_failedbreakout,B001,B001,baseline,,,2024,2025,draft,,,,FX/results/family_B_failedbreakout/B001/
+B002,family_B_failedbreakout,B001,B002,only_session=W1,,,2024,2025,draft,,,,FX/results/family_B_failedbreakout/B002/
+B003,family_B_failedbreakout,B001,B003,use_h1_trend_filter=False,,,2024,2025,draft,,,,FX/results/family_B_failedbreakout/B003/
+B004,family_B_failedbreakout,B001,B004,max_losing_streak=999,,,2024,2025,draft,,,,FX/results/family_B_failedbreakout/B004/
+B005,family_B_failedbreakout,B001,B005,use_time_filter=False,,,2024,2025,draft,,,,FX/results/family_B_failedbreakout/B005/
+C001,family_C_m1entry,C001,C001,baseline,,,2024,2025,draft,,,,FX/results/family_C_m1entry/C001/
+C002,family_C_m1entry,C001,C002,only_session=W1,,,2024,2025,draft,,,,FX/results/family_C_m1entry/C002/
+C003,family_C_m1entry,C001,C003,use_h1_trend_filter=False,,,2024,2025,draft,,,,FX/results/family_C_m1entry/C003/
+C004,family_C_m1entry,C001,C004,max_losing_streak=999,,,2024,2025,draft,,,,FX/results/family_C_m1entry/C004/
+C005,family_C_m1entry,C001,C005,use_time_filter=False,,,2024,2025,draft,,,,FX/results/family_C_m1entry/C005/
+C101,family_C_m1entry_v2,C101,C101,,,,2024,2025,draft,,,,FX/results/family_C_m1entry_v2/C101/
+C102,family_C_m1entry_v2,C101,C102,,,,2024,2025,draft,,,,FX/results/family_C_m1entry_v2/C102/
+C103,family_C_m1entry_v2,C101,C103,,,,2024,2025,draft,,,,FX/results/family_C_m1entry_v2/C103/

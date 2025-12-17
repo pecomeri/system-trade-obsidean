@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Equity/JP/15_setups/00_プロンプト.md",
+                "file": "FX/_review/2025-12-protocol/review_context_web.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "00_プロンプト"
+              "title": "review_context_web"
             }
           }
         ]
@@ -114,7 +114,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Equity/JP/15_setups/00_プロンプト.md",
+                "file": "FX/_review/2025-12-protocol/review_context_web.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -124,7 +124,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "00_プロンプトへのバックリンク"
+              "title": "review_context_webへのバックリンク"
             }
           },
           {
@@ -205,41 +205,41 @@
   },
   "active": "dcb8e0cb9e4f8ed6",
   "lastOpenFiles": [
-    "FX/20_strategies/topdown_trend_trigger.md",
-    "Equity/JP/data/README.md",
-    "Equity/JP/99_logs/README.md",
-    "Equity/JP/28_players/00_プロンプト.md",
-    "Equity/JP/15_setups/00_プロンプト.md",
-    "Equity/JP/10_regimes/00_プロンプト.md",
-    "Equity/JP/00_Index/overview.md",
-    "Equity/JP/data",
-    "Equity/JP/99_logs",
-    "Equity/JP/28_players",
-    "Equity/JP/15_setups",
-    "Equity/JP/10_regimes",
-    "Equity/JP/00_Index",
-    "Equity/JP",
-    "Equity",
-    "FX/20_strategies/orderbook_as_last_filter.md",
-    "FX/20_strategies/micro_trend_control_filter.md",
-    "FX/20_strategies/00_プロンプト.md",
-    "FX/40_freeze/freeze_2025-12-17.md",
-    "FX/results/family_C_m1entry_v2/C103/in_sample_2024/monthly_by_session.csv",
-    "FX/results/family_C_m1entry_v2/C103/in_sample_2024/monthly.csv",
-    "FX/30_hypotheses/family_C_m1entry_v2/C102_no_h1_filter.md",
-    "FX/30_hypotheses/family_C_m1entry_v2/C103_no_time_filter.md",
-    "FX/30_hypotheses/family_C_m1entry_v2/C101_baseline.md",
-    "FX/30_hypotheses/family_C_m1entry/C001_baseline.md",
-    "2025-12-17.md",
-    "FX/30_hypotheses/family_C_m1entry/C004_disable_daily_stop.md",
-    "FX/27_filters/F-C001_no_rebreak.md",
+    "FX/_review/2025-12-protocol/review_context.md",
+    "FX/_review/2025-12-protocol/review_context_web.md",
+    "FX/_review/2025-12-protocol/definition_check.md",
+    "_review/2025-12-ai-review/README.md",
+    "_review/2025-12-ai-review/review_context.md",
+    "FX/15_setups/S-001_trend_midrange_fakeout_v.md",
     "FX/35_hypotheses2/H-S001_EB001_FC001.md",
     "FX/35_hypotheses2/00_プロンプト.md",
-    "FX/30_hypotheses/family_B_failedbreakout/B006_observation_h1ratio.md",
-    "FX/00_Index/research_map_setup_entry_filter.md",
-    "FX/25_entries/E-B001_rebreak_confirm.md",
-    "FX/25_entries/E-A001_immediate.md",
-    "FX/15_setups/S-001_trend_midrange_fakeout_v.md",
-    "FX/27_filters/00_プロンプト.md"
+    "FX/30_hypotheses/family_BC_results_summary.md",
+    "FX/30_hypotheses/family_C_m1entry_v2/C103_no_time_filter.md",
+    "FX/30_hypotheses/family_C_m1entry_v2/C102_no_h1_filter.md",
+    "FX/30_hypotheses/family_C_m1entry_v2/C101_baseline.md",
+    "FX/40_freeze/freeze_2025-12-17.md",
+    "_review/2025-12-ai-review/samples/ChatGPTPro_review_answer.md",
+    "FX/results/_summary.csv",
+    "FX/_review/2025-12-protocol/tree_fx.txt",
+    "FX/_review/2025-12-protocol/experiment_registry.csv",
+    "FX/_review/2025-12-protocol/_bak",
+    "FX/_review/2025-12-protocol",
+    "FX/_review",
+    "FX/code/check_definitions.py",
+    "FX/code/freeze_experiment.sh",
+    "FX/code/summarize_results.py",
+    "_review/2025-12-ai-review/samples/Grok_review_answer.md",
+    "_review/2025-12-ai-review/samples/Gemini_review_answer.md",
+    "Equity/JP/15_setups/00_プロンプト.md",
+    "_review/2025-12-ai-review/generated_files.txt",
+    "_review/2025-12-ai-review/samples/27_filters/F-C001_no_rebreak.md",
+    "_review/2025-12-ai-review/samples/27_filters/00_プロンプト.md",
+    "_review/2025-12-ai-review/samples/25_entries/E-B001_rebreak_confirm.md",
+    "_review/2025-12-ai-review/samples/25_entries/E-A001_immediate.md",
+    "_review/2025-12-ai-review/samples/20_strategies/m1_signal_to_10s_entry.md",
+    "_review/2025-12-ai-review/samples/20_strategies/orderbook_as_last_filter.md",
+    "_review/2025-12-ai-review/samples/15_setups/S-001_trend_midrange_fakeout_v.md",
+    "_review/2025-12-ai-review/samples/15_setups/00_プロンプト.md",
+    "_review/2025-12-ai-review/samples/10_regimes/h1_trend_up.md"
   ]
 }

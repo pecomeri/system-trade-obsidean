@@ -1,0 +1,570 @@
+# FX tree (preferred folders)
+FX/00_Index
+├── research_map_setup_entry_filter.md
+└── 全体状況まとめ.md
+FX/10_regimes
+├── 00_プロンプト.md
+├── execution_ok_500ms.md
+├── h1_trend_up.md
+├── high_vol_trend.md
+└── london_active.md
+FX/15_setups
+├── 00_プロンプト.md
+└── S-001_trend_midrange_fakeout_v.md
+FX/20_strategies
+├── 00_プロンプト.md
+├── m1_signal_to_10s_entry.md
+├── micro_trend_control_filter.md
+├── momentum_burst.md
+├── orderbook_as_last_filter.md
+├── pullback_continuation.md
+├── pullback_quick_continuation.md
+├── topdown_trend_trigger.md
+└── volume_imbalance_trigger.md
+FX/25_entries
+├── 00_プロンプト.md
+├── E-A001_immediate.md
+└── E-B001_rebreak_confirm.md
+FX/27_filters
+├── 00_プロンプト.md
+└── F-C001_no_rebreak.md
+
+6 directories, 23 files
+
+# FX tree (full, limited depth)
+FX
+├── .DS_Store
+├── 00_Index
+│   ├── research_map_setup_entry_filter.md
+│   └── 全体状況まとめ.md
+├── 10_regimes
+│   ├── 00_プロンプト.md
+│   ├── execution_ok_500ms.md
+│   ├── h1_trend_up.md
+│   ├── high_vol_trend.md
+│   └── london_active.md
+├── 10秒足.md
+├── 15_setups
+│   ├── 00_プロンプト.md
+│   └── S-001_trend_midrange_fakeout_v.md
+├── 20_strategies
+│   ├── 00_プロンプト.md
+│   ├── m1_signal_to_10s_entry.md
+│   ├── micro_trend_control_filter.md
+│   ├── momentum_burst.md
+│   ├── orderbook_as_last_filter.md
+│   ├── pullback_continuation.md
+│   ├── pullback_quick_continuation.md
+│   ├── topdown_trend_trigger.md
+│   └── volume_imbalance_trigger.md
+├── 25_entries
+│   ├── 00_プロンプト.md
+│   ├── E-A001_immediate.md
+│   └── E-B001_rebreak_confirm.md
+├── 27_filters
+│   ├── 00_プロンプト.md
+│   └── F-C001_no_rebreak.md
+├── 30_hypotheses
+│   ├── 00_プロンプト.md
+│   ├── family_A_breakout
+│   │   ├── A001_2024-2025_results.md
+│   │   ├── A001：ベースライン（板フィルターなし）.md
+│   │   ├── A002_W2_only.md
+│   │   ├── A002：板フィルターあり（最後の地雷回避）.md
+│   │   ├── A003：H1なし（上位足フィルターの価値を測る）.md
+│   │   ├── A004：M1なし（10秒トリガーの“単体性能”を見る）.md
+│   │   └── A005：時間帯なし（ロンドンフィルターの価値を測る）.md
+│   ├── family_B_failedbreakout
+│   │   ├── B001_baseline.md
+│   │   ├── B002_W1_only.md
+│   │   ├── B003_no_h1_filter.md
+│   │   ├── B004_disable_daily_stop.md
+│   │   ├── B005_no_time_filter.md
+│   │   └── B006_observation_h1ratio.md
+│   ├── family_BC_results_summary.md
+│   ├── family_C_m1entry
+│   │   ├── C001_baseline.md
+│   │   ├── C002_W1_only.md
+│   │   ├── C003_no_h1_filter.md
+│   │   ├── C004_disable_daily_stop.md
+│   │   └── C005_no_time_filter.md
+│   └── family_C_m1entry_v2
+│       ├── C101_baseline.md
+│       ├── C102_no_h1_filter.md
+│       └── C103_no_time_filter.md
+├── 35_hypotheses2
+│   ├── 00_プロンプト.md
+│   └── H-S001_EB001_FC001.md
+├── 40_freeze
+│   └── freeze_2025-12-17.md
+├── 5分1分足.md
+├── 99_logs
+│   └── 2025-12-15.md
+├── code
+│   ├── backtest_core.py
+│   ├── backtest_runner.py
+│   ├── core_setup_s001.py
+│   ├── dukas_out_v2
+│   │   └── USDJPY
+│   │       ├── bars10s
+│   │       ├── bars10s_pq
+│   │       ├── bi5
+│   │       └── ticks
+│   ├── polymarket
+│   │   ├── geopoli_index
+│   │   │   └── 10s
+│   │   └── universe
+│   └── run_extract_s001.py
+├── FIX板情報.md
+├── results
+│   ├── b001_2024-01_2024-12_20251216_061228
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── b001_2024-01_2024-12_20251216_072858
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── b001_2025-01_2025-12_20251216_061244
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── b001_2025-01_2025-12_20251216_072914
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── b002_sess_W1_2024-01_2024-12_20251216_061259
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── b002_sess_W1_2024-01_2024-12_20251216_072930
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── b002_sess_W1_2025-01_2025-12_20251216_061315
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── b002_sess_W1_2025-01_2025-12_20251216_072946
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── b003_2024-01_2024-12_20251216_061330
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── b003_2024-01_2024-12_20251216_073002
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── b003_2025-01_2025-12_20251216_061347
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── b003_2025-01_2025-12_20251216_073019
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── b004_2024-01_2024-12_20251216_074521
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── b004_2025-01_2025-12_20251216_074538
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── b005_2024-01_2024-12_20251216_074558
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── b005_2025-01_2025-12_20251216_074610
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── c001_2024-01_2024-12_20251216_061402
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── c001_2024-01_2024-12_20251216_073037
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── c001_2025-01_2025-12_20251216_061418
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── c001_2025-01_2025-12_20251216_073056
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── c002_sess_W1_2024-01_2024-12_20251216_061433
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── c002_sess_W1_2024-01_2024-12_20251216_073113
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── c002_sess_W1_2025-01_2025-12_20251216_061450
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── c002_sess_W1_2025-01_2025-12_20251216_073130
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── c003_2024-01_2024-12_20251216_061505
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── c003_2024-01_2024-12_20251216_073147
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── c003_2025-01_2025-12_20251216_061521
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── c003_2025-01_2025-12_20251216_073204
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── c004_2024-01_2024-12_20251216_074627
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── c004_2025-01_2025-12_20251216_074644
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── c005_2024-01_2024-12_20251216_074706
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── c005_2025-01_2025-12_20251216_074719
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── c101_sess_W1_2024-01_2024-12_20251216_234112
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── c101_sess_W1_2025-01_2025-12_20251216_234128
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── c102_sess_W1_2024-01_2024-12_20251216_234144
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── c102_sess_W1_2025-01_2025-12_20251216_234201
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── c103_sess_W1_2024-01_2024-12_20251216_234216
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── c103_sess_W1_2025-01_2025-12_20251216_234229
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── family_A
+│   │   ├── A001
+│   │   │   ├── config.json
+│   │   │   ├── core_config.json
+│   │   │   ├── forward_2025
+│   │   │   ├── in_sample_2024
+│   │   │   ├── monthly_by_session.csv
+│   │   │   └── monthly.csv
+│   │   ├── A002
+│   │   │   ├── 2024
+│   │   │   ├── config.json
+│   │   │   ├── core_config.json
+│   │   │   ├── forward_2025
+│   │   │   ├── in_sample_2024
+│   │   │   ├── monthly_by_session.csv
+│   │   │   └── monthly.csv
+│   │   ├── A003
+│   │   │   ├── config.json
+│   │   │   ├── core_config.json
+│   │   │   ├── forward_2025
+│   │   │   ├── in_sample_2024
+│   │   │   ├── monthly_by_session.csv
+│   │   │   └── monthly.csv
+│   │   ├── A004
+│   │   │   ├── config.json
+│   │   │   ├── core_config.json
+│   │   │   ├── forward_2025
+│   │   │   ├── in_sample_2024
+│   │   │   ├── monthly_by_session.csv
+│   │   │   └── monthly.csv
+│   │   └── A005
+│   │       ├── config.json
+│   │       ├── core_config.json
+│   │       ├── forward_2025
+│   │       ├── in_sample_2024
+│   │       ├── monthly_by_session.csv
+│   │       └── monthly.csv
+│   ├── family_B_failedbreakout
+│   │   ├── B001
+│   │   │   ├── config.json
+│   │   │   ├── core_config.json
+│   │   │   ├── forward_2025
+│   │   │   ├── in_sample_2024
+│   │   │   ├── monthly_by_session.csv
+│   │   │   └── monthly.csv
+│   │   ├── B002
+│   │   │   ├── config.json
+│   │   │   ├── core_config.json
+│   │   │   ├── forward_2025
+│   │   │   ├── in_sample_2024
+│   │   │   ├── monthly_by_session.csv
+│   │   │   └── monthly.csv
+│   │   ├── B003
+│   │   │   ├── config.json
+│   │   │   ├── core_config.json
+│   │   │   ├── forward_2025
+│   │   │   ├── in_sample_2024
+│   │   │   ├── monthly_by_session.csv
+│   │   │   └── monthly.csv
+│   │   ├── B004
+│   │   │   ├── config.json
+│   │   │   ├── core_config.json
+│   │   │   ├── forward_2025
+│   │   │   ├── in_sample_2024
+│   │   │   ├── monthly_by_session.csv
+│   │   │   └── monthly.csv
+│   │   ├── B005
+│   │   │   ├── config.json
+│   │   │   ├── core_config.json
+│   │   │   ├── forward_2025
+│   │   │   ├── in_sample_2024
+│   │   │   ├── monthly_by_session.csv
+│   │   │   └── monthly.csv
+│   │   ├── B006_observation
+│   │   │   ├── config.json
+│   │   │   ├── h1_uptrend_monthly_ratio_2025.csv
+│   │   │   ├── merged_b002_pnl_vs_h1ratio_2025.csv
+│   │   │   └── summary.txt
+│   │   ├── B007_observation
+│   │   │   ├── config.json
+│   │   │   ├── h1_uptrend_run_stats_2025.csv
+│   │   │   ├── merged_b002_pnl_vs_h1run_2025.csv
+│   │   │   └── summary.txt
+│   │   └── B008_observation
+│   │       ├── config.json
+│   │       ├── state_labeled_2025.csv
+│   │       ├── state_summary_2025.csv
+│   │       └── summary.txt
+│   ├── family_C_m1entry
+│   │   ├── C001
+│   │   │   ├── config.json
+│   │   │   ├── core_config.json
+│   │   │   ├── forward_2025
+│   │   │   ├── in_sample_2024
+│   │   │   ├── monthly_by_session.csv
+│   │   │   └── monthly.csv
+│   │   ├── C002
+│   │   │   ├── config.json
+│   │   │   ├── core_config.json
+│   │   │   ├── forward_2025
+│   │   │   ├── in_sample_2024
+│   │   │   ├── monthly_by_session.csv
+│   │   │   └── monthly.csv
+│   │   ├── C003
+│   │   │   ├── config.json
+│   │   │   ├── core_config.json
+│   │   │   ├── forward_2025
+│   │   │   ├── in_sample_2024
+│   │   │   ├── monthly_by_session.csv
+│   │   │   └── monthly.csv
+│   │   ├── C004
+│   │   │   ├── config.json
+│   │   │   ├── core_config.json
+│   │   │   ├── forward_2025
+│   │   │   ├── in_sample_2024
+│   │   │   ├── monthly_by_session.csv
+│   │   │   └── monthly.csv
+│   │   └── C005
+│   │       ├── config.json
+│   │       ├── core_config.json
+│   │       ├── forward_2025
+│   │       ├── in_sample_2024
+│   │       ├── monthly_by_session.csv
+│   │       └── monthly.csv
+│   ├── family_C_m1entry_v2
+│   │   ├── C101
+│   │   │   ├── config.json
+│   │   │   ├── core_config.json
+│   │   │   ├── forward_2025
+│   │   │   ├── in_sample_2024
+│   │   │   ├── monthly_by_session.csv
+│   │   │   └── monthly.csv
+│   │   ├── C102
+│   │   │   ├── config.json
+│   │   │   ├── core_config.json
+│   │   │   ├── forward_2025
+│   │   │   ├── in_sample_2024
+│   │   │   ├── monthly_by_session.csv
+│   │   │   └── monthly.csv
+│   │   └── C103
+│   │       ├── config.json
+│   │       ├── core_config.json
+│   │       ├── forward_2025
+│   │       ├── in_sample_2024
+│   │       ├── monthly_by_session.csv
+│   │       └── monthly.csv
+│   ├── hyp001_2024-01_2024-12_20251216_042024
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── hyp001_2025-01_2025-12_20251216_042042
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── hyp002_sess_W2_2024-01_2024-12_20251216_035707
+│   │   ├── config.json
+│   │   └── runlog.jsonl
+│   ├── hyp002_sess_W2_2024-01_2024-12_20251216_035947
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── hyp002_sess_W2_2024-01_2024-12_20251216_040149
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── hyp002_sess_W2_2025-01_2025-12_20251216_040004
+│   │   ├── config.json
+│   │   └── runlog.jsonl
+│   ├── hyp002_sess_W2_2025-01_2025-12_20251216_040206
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── hyp003_2024-01_2024-12_20251216_050232
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── hyp003_2025-01_2025-12_20251216_050248
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── hyp004_2024-01_2024-12_20251216_050312
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── hyp004_2025-01_2025-12_20251216_050328
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── hyp005_2024-01_2024-12_20251216_050352
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── hyp005_2025-01_2025-12_20251216_050404
+│   │   ├── config.json
+│   │   ├── monthly_by_session.csv
+│   │   ├── monthly.csv
+│   │   ├── runlog.jsonl
+│   │   └── trades.csv
+│   ├── summary_family_BC.csv
+│   └── summary_family_C_v2.csv
+└── V字.md
+
+140 directories, 394 files
