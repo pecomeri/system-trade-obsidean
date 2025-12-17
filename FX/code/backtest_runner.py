@@ -11,6 +11,13 @@ from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 
 
+def _results_root() -> Path:
+    """
+    Prefer `FX/results` (moved location) and fall back to repo-root `results`.
+    """
+    return Path("FX/results") if Path("FX/results").exists() else Path("results")
+
+
 @dataclass(frozen=True)
 class HypConfig:
     family: str
@@ -197,7 +204,7 @@ def _sum_trades(monthly_csv: Path) -> int:
 
 
 def _run_variant_inprocess(cfg: HypConfig, *, run_tag: str) -> dict:
-    out_root = Path("results") / cfg.family / cfg.hyp
+    out_root = _results_root() / cfg.family / cfg.hyp
     out_root.mkdir(parents=True, exist_ok=True)
 
     # 2024 verification
@@ -251,7 +258,7 @@ def run_a002_w2_only(cfg: HypConfig) -> dict:
     if not core.exists():
         raise FileNotFoundError(f"backtest_core.py not found: {core}")
 
-    out_root = Path("results") / cfg.family / cfg.hyp
+    out_root = _results_root() / cfg.family / cfg.hyp
     out_root.mkdir(parents=True, exist_ok=True)
 
     py = sys.executable
@@ -308,7 +315,7 @@ def run_a001_baseline(cfg: HypConfig) -> dict:
     if not core.exists():
         raise FileNotFoundError(f"backtest_core.py not found: {core}")
 
-    out_root = Path("results") / cfg.family / cfg.hyp
+    out_root = _results_root() / cfg.family / cfg.hyp
     out_root.mkdir(parents=True, exist_ok=True)
 
     py = sys.executable
@@ -358,7 +365,7 @@ def run_a001_baseline(cfg: HypConfig) -> dict:
 
 
 def run_family_a_variant(cfg: HypConfig) -> dict:
-    out_root = Path("results") / cfg.family / cfg.hyp
+    out_root = _results_root() / cfg.family / cfg.hyp
     out_root.mkdir(parents=True, exist_ok=True)
 
     tag = f"hyp{cfg.hyp[1:]}"
@@ -511,7 +518,7 @@ def main() -> int:
         ]
         out: list[dict] = []
         for fam, hyp, delta in specs:
-            base = Path("results") / fam / hyp
+            base = _results_root() / fam / hyp
             v_csv = base / "in_sample_2024" / "monthly.csv"
             f_csv = base / "forward_2025" / "monthly.csv"
             if not v_csv.exists() or not f_csv.exists():
@@ -539,7 +546,7 @@ def main() -> int:
         return out
 
     if args.suite == "family_BC_summary":
-        summary_path = Path("results") / "summary_family_BC.csv"
+        summary_path = _results_root() / "summary_family_BC.csv"
         summary_path.parent.mkdir(parents=True, exist_ok=True)
         rows = _build_rows_from_existing()
         rows = _judge_rows(rows)
@@ -551,7 +558,7 @@ def main() -> int:
         import csv
 
         family = "family_C_m1entry_v2"
-        summary_path = Path("results") / "summary_family_C_v2.csv"
+        summary_path = _results_root() / "summary_family_C_v2.csv"
         summary_path.parent.mkdir(parents=True, exist_ok=True)
 
         specs: list[HypConfig] = [
@@ -637,7 +644,7 @@ def main() -> int:
         return 0
 
     if args.suite == "family_BC":
-        summary_path = Path("results") / "summary_family_BC.csv"
+        summary_path = _results_root() / "summary_family_BC.csv"
         summary_path.parent.mkdir(parents=True, exist_ok=True)
 
         def preset(
@@ -844,7 +851,7 @@ def main() -> int:
         import backtest_core as bc
         import pandas as pd
 
-        out_dir = Path("results") / "family_B_failedbreakout" / "B006_observation"
+        out_dir = _results_root() / "family_B_failedbreakout" / "B006_observation"
         out_dir.mkdir(parents=True, exist_ok=True)
 
         obs_cfg = bc.Config(
@@ -872,7 +879,7 @@ def main() -> int:
         grp.to_csv(p_ratio, index=False)
 
         # merge with B002 forward monthly
-        b002_monthly = Path("results") / "family_B_failedbreakout" / "B002" / "monthly.csv"
+        b002_monthly = _results_root() / "family_B_failedbreakout" / "B002" / "monthly.csv"
         if not b002_monthly.exists():
             raise FileNotFoundError(f"B002 monthly.csv not found: {b002_monthly}")
         pnl = pd.read_csv(b002_monthly)
@@ -925,7 +932,7 @@ def main() -> int:
 
         import backtest_core as bc
 
-        out_dir = Path("results") / "family_B_failedbreakout" / "B007_observation"
+        out_dir = _results_root() / "family_B_failedbreakout" / "B007_observation"
         out_dir.mkdir(parents=True, exist_ok=True)
 
         obs_cfg = bc.Config(
@@ -999,7 +1006,7 @@ def main() -> int:
         stats.to_csv(p_stats, index=False)
 
         # Merge with B006 merged CSV (month,sum_pnl_pips,trades,h1_uptrend_ratio)
-        b006_merged = Path("results") / "family_B_failedbreakout" / "B006_observation" / "merged_b002_pnl_vs_h1ratio_2025.csv"
+        b006_merged = _results_root() / "family_B_failedbreakout" / "B006_observation" / "merged_b002_pnl_vs_h1ratio_2025.csv"
         if not b006_merged.exists():
             raise FileNotFoundError(f"B006 merged CSV not found: {b006_merged}")
         b006 = pd.read_csv(b006_merged)
@@ -1066,10 +1073,10 @@ def main() -> int:
         import json as _json
         import pandas as pd
 
-        out_dir = Path("results") / "family_B_failedbreakout" / "B008_observation"
+        out_dir = _results_root() / "family_B_failedbreakout" / "B008_observation"
         out_dir.mkdir(parents=True, exist_ok=True)
 
-        merged_b007 = Path("results") / "family_B_failedbreakout" / "B007_observation" / "merged_b002_pnl_vs_h1run_2025.csv"
+        merged_b007 = _results_root() / "family_B_failedbreakout" / "B007_observation" / "merged_b002_pnl_vs_h1run_2025.csv"
         if not merged_b007.exists():
             raise FileNotFoundError(f"B007 merged CSV not found: {merged_b007}")
 

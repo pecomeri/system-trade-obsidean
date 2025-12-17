@@ -20,7 +20,7 @@ class Config:
     parquet_dirname: str = "bars10s_pq"
 
     # output
-    results_root: Path = Path("results")
+    results_root: Path = (Path("FX/results") if Path("FX/results").exists() else Path("results"))
     run_tag: str = "hyp"
 
     # month filter
@@ -600,4 +600,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
