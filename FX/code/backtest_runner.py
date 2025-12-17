@@ -406,7 +406,7 @@ def run_family_a_variant(cfg: HypConfig) -> dict:
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser()
-    p.add_argument("--suite", default=None, choices=[None, "family_BC", "family_BC_summary"])
+    p.add_argument("--suite", default=None, choices=[None, "family_BC", "family_BC_summary", "family_C_v2"])
     p.add_argument(
         "--hyp",
         default="A002",
@@ -414,6 +414,7 @@ def parse_args() -> argparse.Namespace:
             "A001", "A002", "A003", "A004", "A005",
             "B001", "B002", "B003", "B004", "B005", "B006", "B007", "B008",
             "C001", "C002", "C003", "C004", "C005",
+            "C101", "C102", "C103",
         ],
     )
     p.add_argument("--symbol", default="USDJPY")
@@ -543,6 +544,95 @@ def main() -> int:
         rows = _build_rows_from_existing()
         rows = _judge_rows(rows)
         _write_summary_csv(summary_path, rows)
+        print(f"[runner] wrote summary: {summary_path}", flush=True)
+        return 0
+
+    if args.suite == "family_C_v2":
+        import csv
+
+        family = "family_C_m1entry_v2"
+        summary_path = Path("results") / "summary_family_C_v2.csv"
+        summary_path.parent.mkdir(parents=True, exist_ok=True)
+
+        specs: list[HypConfig] = [
+            # C101 baseline: M1-close trigger, W1-only, H1 on, time filter on
+            HypConfig(
+                family=family,
+                hyp="C101",
+                symbol=str(args.symbol).upper(),
+                root=str(root),
+                only_session="W1",
+                verify_from_month=str(args.verify_from_month),
+                verify_to_month=str(args.verify_to_month),
+                forward_from_month=str(args.forward_from_month),
+                forward_to_month=str(args.forward_to_month),
+                spread_pips=float(args.spread_pips),
+                entry_mode="C_m1_close",
+                bias_mode="m1_candle",
+            ),
+            # C102: disable H1 only
+            HypConfig(
+                family=family,
+                hyp="C102",
+                symbol=str(args.symbol).upper(),
+                root=str(root),
+                only_session="W1",
+                verify_from_month=str(args.verify_from_month),
+                verify_to_month=str(args.verify_to_month),
+                forward_from_month=str(args.forward_from_month),
+                forward_to_month=str(args.forward_to_month),
+                spread_pips=float(args.spread_pips),
+                use_h1_trend_filter=False,
+                entry_mode="C_m1_close",
+                bias_mode="m1_candle",
+            ),
+            # C103: disable time filter only
+            HypConfig(
+                family=family,
+                hyp="C103",
+                symbol=str(args.symbol).upper(),
+                root=str(root),
+                only_session="W1",
+                verify_from_month=str(args.verify_from_month),
+                verify_to_month=str(args.verify_to_month),
+                forward_from_month=str(args.forward_from_month),
+                forward_to_month=str(args.forward_to_month),
+                spread_pips=float(args.spread_pips),
+                use_time_filter=False,
+                entry_mode="C_m1_close",
+                bias_mode="m1_candle",
+            ),
+        ]
+
+        metas: dict[str, dict] = {}
+        for cfg in specs:
+            metas[cfg.hyp] = _run_variant_inprocess(cfg, run_tag=cfg.hyp.lower())
+
+        baseline_forward = float(metas["C101"]["forward"]["sum_pnl_pips"])
+
+        def judge(hyp: str) -> str:
+            fwd = float(metas[hyp]["forward"]["sum_pnl_pips"])
+            if hyp == "C101":
+                return "conditional" if fwd > 0 else "dead"
+            return "conditional" if (fwd - baseline_forward) >= 50.0 else "dead"
+
+        with summary_path.open("w", encoding="utf-8", newline="") as f:
+            w = csv.DictWriter(
+                f,
+                fieldnames=["hyp", "verify_sum_pnl_pips", "forward_sum_pnl_pips", "trades", "judge"],
+            )
+            w.writeheader()
+            for hyp in ["C101", "C102", "C103"]:
+                w.writerow(
+                    {
+                        "hyp": hyp,
+                        "verify_sum_pnl_pips": float(metas[hyp]["verify"]["sum_pnl_pips"]),
+                        "forward_sum_pnl_pips": float(metas[hyp]["forward"]["sum_pnl_pips"]),
+                        "trades": int(metas[hyp]["forward"]["trades"]),
+                        "judge": judge(hyp),
+                    }
+                )
+
         print(f"[runner] wrote summary: {summary_path}", flush=True)
         return 0
 
@@ -695,6 +785,28 @@ def main() -> int:
             use_time_filter=False,
         )
         meta = run_family_a_variant(cfg)
+        print("[runner] done. summary:", json.dumps(meta, ensure_ascii=False), flush=True)
+        return 0
+
+    if args.hyp in ("C101", "C102", "C103"):
+        family = "family_C_m1entry_v2"
+        cfg = HypConfig(
+            family=family,
+            hyp=str(args.hyp),
+            symbol=str(args.symbol).upper(),
+            root=str(root),
+            only_session="W1",
+            verify_from_month=str(args.verify_from_month),
+            verify_to_month=str(args.verify_to_month),
+            forward_from_month=str(args.forward_from_month),
+            forward_to_month=str(args.forward_to_month),
+            spread_pips=float(args.spread_pips),
+            entry_mode="C_m1_close",
+            bias_mode="m1_candle",
+            use_h1_trend_filter=(False if args.hyp == "C102" else None),
+            use_time_filter=(False if args.hyp == "C103" else None),
+        )
+        meta = _run_variant_inprocess(cfg, run_tag=str(args.hyp).lower())
         print("[runner] done. summary:", json.dumps(meta, ensure_ascii=False), flush=True)
         return 0
 
