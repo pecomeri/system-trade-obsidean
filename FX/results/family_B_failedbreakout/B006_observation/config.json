@@ -1,0 +1,11 @@
+{
+  "family": "family_B_failedbreakout",
+  "hyp": "B006_observation",
+  "symbol": "USDJPY",
+  "root": "FX/code/dukas_out_v2",
+  "from_month": "2025-01",
+  "to_month": "2025-12",
+  "h1_ema_period": 50,
+  "h1_ema_slope_bars": 6,
+  "source_b002_monthly_csv": "results/family_B_failedbreakout/B002/monthly.csv"
+}

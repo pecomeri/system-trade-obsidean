@@ -1,0 +1,12 @@
+{"event": "start_backtest", "bars": 1995151, "utc": "2025-12-16T07:29:56Z"}
+{"event": "daily_stop", "ts": "2025-02-04 09:21:30+00:00", "losing_streak": 2}
+{"event": "daily_stop", "ts": "2025-04-08 09:44:50+00:00", "losing_streak": 2}
+{"event": "daily_stop", "ts": "2025-04-23 10:36:40+00:00", "losing_streak": 2}
+{"event": "daily_stop", "ts": "2025-04-25 10:28:50+00:00", "losing_streak": 2}
+{"event": "daily_stop", "ts": "2025-07-18 10:57:30+00:00", "losing_streak": 2}
+{"event": "daily_stop", "ts": "2025-07-25 10:28:20+00:00", "losing_streak": 2}
+{"event": "daily_stop", "ts": "2025-07-28 10:42:30+00:00", "losing_streak": 2}
+{"event": "daily_stop", "ts": "2025-09-02 11:03:20+00:00", "losing_streak": 2}
+{"event": "daily_stop", "ts": "2025-10-27 11:23:30+00:00", "losing_streak": 2}
+{"event": "daily_stop", "ts": "2025-11-10 12:20:40+00:00", "losing_streak": 2}
+{"event": "end_backtest", "trades": 146, "utc": "2025-12-16T07:30:02Z"}

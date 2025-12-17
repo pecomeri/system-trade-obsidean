@@ -1,0 +1,27 @@
+{
+  "family": "family_C_m1entry",
+  "hyp": "C005",
+  "symbol": "USDJPY",
+  "root": "FX/code/dukas_out_v2",
+  "spread_pips": 1.0,
+  "verify": {
+    "from_month": "2024-01",
+    "to_month": "2024-12",
+    "run_dir": "results/c005_2024-01_2024-12_20251216_074706",
+    "sum_pnl_pips": -1031.9999999994934,
+    "trades": 970
+  },
+  "forward": {
+    "from_month": "2025-01",
+    "to_month": "2025-12",
+    "run_dir": "results/c005_2025-01_2025-12_20251216_074719",
+    "sum_pnl_pips": -1341.9999999995896,
+    "trades": 781
+  },
+  "diff": {
+    "only_session": null,
+    "use_h1_trend_filter": null,
+    "use_time_filter": false,
+    "disable_m1_bias_filter": false
+  }
+}

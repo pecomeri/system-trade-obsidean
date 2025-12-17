@@ -1,0 +1,27 @@
+{
+  "family": "family_B_failedbreakout",
+  "hyp": "B005",
+  "symbol": "USDJPY",
+  "root": "FX/code/dukas_out_v2",
+  "spread_pips": 1.0,
+  "verify": {
+    "from_month": "2024-01",
+    "to_month": "2024-12",
+    "run_dir": "results/b005_2024-01_2024-12_20251216_074558",
+    "sum_pnl_pips": -797.9999999996238,
+    "trades": 720
+  },
+  "forward": {
+    "from_month": "2025-01",
+    "to_month": "2025-12",
+    "run_dir": "results/b005_2025-01_2025-12_20251216_074610",
+    "sum_pnl_pips": -711.9999999996935,
+    "trades": 586
+  },
+  "diff": {
+    "only_session": null,
+    "use_h1_trend_filter": null,
+    "use_time_filter": false,
+    "disable_m1_bias_filter": false
+  }
+}

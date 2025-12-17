@@ -1,0 +1,11 @@
+B008_observation (B002 / 2025 forward)
+state rule: choppy_trend if (true_runs_count > median(true_runs_count)) AND (mean_true_run_hours < median(mean_true_run_hours)); else persistent_trend
+median_true_runs_count=2606.500000
+median_mean_true_run_hours=0.072421
+
+state_summary_2025:
+- choppy_trend: months=5 sum_pnl_pips_sum=68.0 sum_pnl_pips_mean=13.600 trades_sum=79 months=['2025-07', '2025-08', '2025-09', '2025-10', '2025-11']
+- persistent_trend: months=7 sum_pnl_pips_sum=122.0 sum_pnl_pips_mean=17.429 trades_sum=67 months=['2025-01', '2025-02', '2025-03', '2025-04', '2025-05', '2025-06', '2025-12']
+
+labeled_csv=results/family_B_failedbreakout/B008_observation/state_labeled_2025.csv
+state_summary_csv=results/family_B_failedbreakout/B008_observation/state_summary_2025.csv

@@ -1,0 +1,5 @@
+B006_observation (B002 / 2025 forward)
+win_months_count=8 win_mean_h1_uptrend_ratio=0.482218 months=[2025-03,2025-05,2025-06,2025-07,2025-08,2025-09,2025-10,2025-12]
+loss_months_count=4 loss_mean_h1_uptrend_ratio=0.370803 months=[2025-01,2025-02,2025-04,2025-11]
+ratio_csv=results/family_B_failedbreakout/B006_observation/h1_uptrend_monthly_ratio_2025.csv
+merged_csv=results/family_B_failedbreakout/B006_observation/merged_b002_pnl_vs_h1ratio_2025.csv

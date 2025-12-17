@@ -1,0 +1,10 @@
+{
+  "family": "family_B_failedbreakout",
+  "hyp": "B008_observation",
+  "source_csv": "results/family_B_failedbreakout/B007_observation/merged_b002_pnl_vs_h1run_2025.csv",
+  "rule": "choppy_trend if (true_runs_count > median(true_runs_count)) AND (mean_true_run_hours < median(mean_true_run_hours)) else persistent_trend",
+  "medians_2025": {
+    "true_runs_count": 2606.5,
+    "mean_true_run_hours": 0.0724212519733799
+  }
+}

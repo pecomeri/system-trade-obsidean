@@ -1,0 +1,15 @@
+B007_observation (B002 / 2025 forward)
+win_months_count=8 months=[2025-03,2025-05,2025-06,2025-07,2025-08,2025-09,2025-10,2025-12]
+loss_months_count=4 months=[2025-01,2025-02,2025-04,2025-11]
+win_mean_true_ratio=0.482218
+loss_mean_true_ratio=0.370803
+win_mean_max_true_run_hours=6.088194
+loss_mean_max_true_run_hours=7.920833
+win_mean_mean_true_run_hours=0.068949
+loss_mean_mean_true_run_hours=0.124281
+win_mean_p90_true_run_hours=0.125903
+loss_mean_p90_true_run_hours=0.235972
+win_mean_true_runs_count=3410.750000
+loss_mean_true_runs_count=2194.000000
+run_stats_csv=results/family_B_failedbreakout/B007_observation/h1_uptrend_run_stats_2025.csv
+merged_csv=results/family_B_failedbreakout/B007_observation/merged_b002_pnl_vs_h1run_2025.csv

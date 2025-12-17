@@ -1,0 +1,12 @@
+{
+  "family": "family_B_failedbreakout",
+  "hyp": "B007_observation",
+  "symbol": "USDJPY",
+  "root": "FX/code/dukas_out_v2",
+  "from_month": "2025-01",
+  "to_month": "2025-12",
+  "h1_ema_period": 50,
+  "h1_ema_slope_bars": 6,
+  "b006_merged_csv": "results/family_B_failedbreakout/B006_observation/merged_b002_pnl_vs_h1ratio_2025.csv",
+  "missing_bars_break_rule": "run continues only if previous bar exists at exactly +10s and both bars are true"
+}
