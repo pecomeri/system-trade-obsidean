@@ -33,7 +33,7 @@ class HypConfig:
     use_h1_trend_filter: bool | None = None
     use_time_filter: bool | None = None
     disable_m1_bias_filter: bool = False
-    entry_mode: str = "A_10s_breakout"  # "A_10s_breakout" | "B_failed_breakout" | "C_m1_close"
+    entry_mode: str = "A_10s_breakout"  # "A_10s_breakout" | "B_failed_breakout" | "C_m1_close" | "D_m1_momentum"
     bias_mode: str = "default"          # "default" | "m1_candle"
     max_losing_streak: int | None = None
 
@@ -129,6 +129,40 @@ def _run_core_inprocess(cfg: HypConfig, *, from_month: str, to_month: str, run_t
             trig_closed = trig.astype(bool)
             return trig_closed.reindex(df10.index, method="ffill").fillna(False).to_numpy(dtype=bool)
         patches.append(_temporary_attr(bc, "high_breakout_10s", _m1_close_breakout))
+
+    if cfg.entry_mode == "D_m1_momentum":
+        import pandas as pd
+
+        def _m1_momentum_burst_up(df10, core_cfg):  # noqa: ANN001
+            # M1 confirmed candle is the primary trigger; 10s is execution helper only.
+            o = df10["open_bid"].resample("1min", label="right", closed="right").first()
+            c = df10["close_bid"].resample("1min", label="right", closed="right").last()
+            m1 = pd.DataFrame({"open": o, "close": c}).dropna()
+
+            # momentum burst (price-only): body_range > mean(body_range) over last N bars
+            # N is taken from existing core config (lookback_bars) to avoid introducing a tuned number.
+            body = (m1["close"] - m1["open"]).abs()
+            mean_prev = body.shift(1).rolling(core_cfg.lookback_bars).mean()
+            burst_up = (m1["close"] > m1["open"]) & (body > mean_prev)
+
+            # use last closed M1 only (no lookahead)
+            burst_closed = burst_up.shift(1).fillna(False)
+            return burst_closed.reindex(df10.index, method="ffill").fillna(False).to_numpy(dtype=bool)
+
+        def _m1_momentum_burst_down(df10, core_cfg):  # noqa: ANN001
+            o = df10["open_bid"].resample("1min", label="right", closed="right").first()
+            c = df10["close_bid"].resample("1min", label="right", closed="right").last()
+            m1 = pd.DataFrame({"open": o, "close": c}).dropna()
+
+            body = (m1["close"] - m1["open"]).abs()
+            mean_prev = body.shift(1).rolling(core_cfg.lookback_bars).mean()
+            burst_dn = (m1["close"] < m1["open"]) & (body > mean_prev)
+
+            burst_closed = burst_dn.shift(1).fillna(False)
+            return burst_closed.reindex(df10.index, method="ffill").fillna(False).to_numpy(dtype=bool)
+
+        patches.append(_temporary_attr(bc, "high_breakout_10s", _m1_momentum_burst_up))
+        patches.append(_temporary_attr(bc, "low_breakout_10s", _m1_momentum_burst_down))
 
     with contextlib.ExitStack() as stack:
         for p in patches:
@@ -413,7 +447,7 @@ def run_family_a_variant(cfg: HypConfig) -> dict:
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser()
-    p.add_argument("--suite", default=None, choices=[None, "family_BC", "family_BC_summary", "family_C_v2"])
+    p.add_argument("--suite", default=None, choices=[None, "family_BC", "family_BC_summary", "family_C_v2", "family_D_momentum"])
     p.add_argument(
         "--hyp",
         default="A002",
@@ -422,6 +456,7 @@ def parse_args() -> argparse.Namespace:
             "B001", "B002", "B003", "B004", "B005", "B006", "B007", "B008",
             "C001", "C002", "C003", "C004", "C005",
             "C101", "C102", "C103",
+            "D001",
         ],
     )
     p.add_argument("--symbol", default="USDJPY")
@@ -551,6 +586,63 @@ def main() -> int:
         rows = _build_rows_from_existing()
         rows = _judge_rows(rows)
         _write_summary_csv(summary_path, rows)
+        print(f"[runner] wrote summary: {summary_path}", flush=True)
+        return 0
+
+    if args.suite == "family_D_momentum":
+        import csv
+
+        family = "family_D_momentum"
+        summary_path = _results_root() / "summary_family_D_momentum.csv"
+        summary_path.parent.mkdir(parents=True, exist_ok=True)
+
+        cfg = HypConfig(
+            family=family,
+            hyp="D001",
+            symbol=str(args.symbol).upper(),
+            root=str(root),
+            only_session="W1",
+            verify_from_month=str(args.verify_from_month),
+            verify_to_month=str(args.verify_to_month),
+            forward_from_month=str(args.forward_from_month),
+            forward_to_month=str(args.forward_to_month),
+            spread_pips=float(args.spread_pips),
+            entry_mode="D_m1_momentum",
+            disable_m1_bias_filter=True,
+        )
+        meta = _run_variant_inprocess(cfg, run_tag="d001")
+
+        verify_sum = float(meta["verify"]["sum_pnl_pips"])
+        verify_trades = int(meta["verify"]["trades"])
+        forward_sum = float(meta["forward"]["sum_pnl_pips"])
+        forward_trades = int(meta["forward"]["trades"])
+
+        judge = "conditional" if (forward_sum >= 0) or (forward_sum > verify_sum) else "dead"
+
+        with summary_path.open("w", encoding="utf-8", newline="") as f:
+            w = csv.DictWriter(
+                f,
+                fieldnames=[
+                    "hyp",
+                    "verify_sum_pnl_pips",
+                    "verify_trades",
+                    "forward_sum_pnl_pips",
+                    "forward_trades",
+                    "judge",
+                ],
+            )
+            w.writeheader()
+            w.writerow(
+                {
+                    "hyp": "D001",
+                    "verify_sum_pnl_pips": verify_sum,
+                    "verify_trades": verify_trades,
+                    "forward_sum_pnl_pips": forward_sum,
+                    "forward_trades": forward_trades,
+                    "judge": judge,
+                }
+            )
+
         print(f"[runner] wrote summary: {summary_path}", flush=True)
         return 0
 
@@ -814,6 +906,25 @@ def main() -> int:
             use_time_filter=(False if args.hyp == "C103" else None),
         )
         meta = _run_variant_inprocess(cfg, run_tag=str(args.hyp).lower())
+        print("[runner] done. summary:", json.dumps(meta, ensure_ascii=False), flush=True)
+        return 0
+
+    if args.hyp == "D001":
+        cfg = HypConfig(
+            family="family_D_momentum",
+            hyp="D001",
+            symbol=str(args.symbol).upper(),
+            root=str(root),
+            only_session="W1",
+            verify_from_month=str(args.verify_from_month),
+            verify_to_month=str(args.verify_to_month),
+            forward_from_month=str(args.forward_from_month),
+            forward_to_month=str(args.forward_to_month),
+            spread_pips=float(args.spread_pips),
+            entry_mode="D_m1_momentum",
+            disable_m1_bias_filter=True,
+        )
+        meta = _run_variant_inprocess(cfg, run_tag="d001")
         print("[runner] done. summary:", json.dumps(meta, ensure_ascii=False), flush=True)
         return 0
 
