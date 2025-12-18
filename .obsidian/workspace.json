@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "FX/30_hypotheses/family_C_m1entry/C002_W1_only.md",
+                "file": "FX/10_regimes/london_active.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "C002_W1_only"
+              "title": "london_active"
             }
           }
         ]
@@ -114,7 +114,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "FX/30_hypotheses/family_C_m1entry/C002_W1_only.md",
+                "file": "FX/10_regimes/london_active.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -124,7 +124,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "C002_W1_onlyへのバックリンク"
+              "title": "london_activeへのバックリンク"
             }
           },
           {
@@ -205,18 +205,27 @@
   },
   "active": "dcb8e0cb9e4f8ed6",
   "lastOpenFiles": [
+    "FX/results/logic_matrix_ABC.md",
+    "FX/30_hypotheses/family_C_m1entry_v2/C102_no_h1_filter.md",
+    "FX/results/logic_matrix_ABC.meta.json",
+    "FX/results/logic_matrix_ABC.csv",
+    "FX/code/generate_logic_matrix.py",
+    "FX/00_Index/全体状況まとめ.md",
+    "FX/30_hypotheses/family_C_m1entry/C001_baseline.md",
+    "FX/30_hypotheses/family_C_m1entry_v2/C101_baseline.md",
+    "FX/10_regimes/h1_trend_up.md",
+    "FX/00_Index/family_A_B_C_summary.md",
+    "FX/30_hypotheses/family_A_breakout/A003：H1なし（上位足フィルターの価値を測る）.md",
+    "FX/35_hypotheses2/H-S001_EB001_FC001.md",
+    "FX/30_hypotheses/family_C_m1entry/C002_W1_only.md",
     "FX/30_hypotheses/family_C_m1entry/C003_no_h1_filter.md",
     "FX/30_hypotheses/family_C_m1entry/C004_disable_daily_stop.md",
-    "FX/30_hypotheses/family_C_m1entry/C002_W1_only.md",
-    "FX/30_hypotheses/family_C_m1entry/C001_baseline.md",
     "FX/30_hypotheses/family_B_failedbreakout/B006_observation_h1ratio.md",
     "FX/30_hypotheses/family_B_failedbreakout/B005_no_time_filter.md",
     "FX/30_hypotheses/family_B_failedbreakout/B004_disable_daily_stop.md",
     "FX/30_hypotheses/family_B_failedbreakout/B003_no_h1_filter.md",
     "FX/30_hypotheses/family_B_failedbreakout/B002_W1_only.md",
-    "FX/30_hypotheses/family_C_m1entry_v2/C102_no_h1_filter.md",
     "FX/30_hypotheses/family_C_m1entry_v2/C103_no_time_filter.md",
-    "FX/30_hypotheses/family_C_m1entry_v2/C101_baseline.md",
     "FX/results/family_C_m1entry_v2/C104_observation/config.json",
     "FX/results/family_C_m1entry_v2/C104_observation/summary.txt",
     "FX/results/family_C_m1entry_v2/C104_observation/merged_monthly_by_session_2025.csv",
@@ -224,22 +233,12 @@
     "FX/results/family_C_m1entry_v2/C104_observation",
     "FX/code/polymarket/market_events/2025-12-17.ndjson.gz",
     "FX/code/polymarket/market_events/2025-12-17.ndjson.gz.cDbe95bF",
-    "FX/code/polymarket/market_events",
     "FX/30_hypotheses/family_C_m1entry/C005_no_time_filter.md",
     "FX/30_hypotheses/family_B_failedbreakout/B001_baseline.md",
     "FX/30_hypotheses/family_A_breakout/A005：時間帯なし（ロンドンフィルターの価値を測る）.md",
-    "FX/30_hypotheses/family_A_breakout/A003：H1なし（上位足フィルターの価値を測る）.md",
     "FX/30_hypotheses/family_A_breakout/A001：ベースライン（板フィルターなし）.md",
     "FX/30_hypotheses/family_A_breakout/A002：板フィルターあり（最後の地雷回避）.md",
     "FX/30_hypotheses/family_A_breakout/A001_2024-2025_results.md",
-    "FX/30_hypotheses/family_A_breakout/A002_W2_only.md",
-    "FX/30_hypotheses/family_A_breakout/A004：M1なし（10秒トリガーの“単体性能”を見る）.md",
-    "FX/_review/2025-12-protocol/review_context_web.md",
-    "FX/_review/2025-12-protocol/review_context.md",
-    "FX/_review/2025-12-protocol/definition_check.md",
-    "_review/2025-12-ai-review/README.md",
-    "_review/2025-12-ai-review/review_context.md",
-    "FX/results/_summary.csv",
-    "FX/_review/2025-12-protocol/tree_fx.txt"
+    "FX/30_hypotheses/family_A_breakout/A002_W2_only.md"
   ]
 }

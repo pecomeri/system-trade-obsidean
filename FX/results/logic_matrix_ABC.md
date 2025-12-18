@@ -1,0 +1,20 @@
+| family                  | hyp  | delta                       | entry_mode        | bias_mode | only_session | use_h1_trend_filter | use_time_filter | max_losing_streak |
+| ----------------------- | ---- | --------------------------- | ----------------- | --------- | ------------ | ------------------- | --------------- | ----------------- |
+| family_A                | A001 | baseline                    | A_10s_breakout    | default   | None         | True                | True            | 2                 |
+| family_A                | A002 | only_session=W2             | A_10s_breakout    | default   | W2           | True                | True            | 2                 |
+| family_A                | A003 | use_h1_trend_filter=False   | A_10s_breakout    | default   | None         | False               | True            | 2                 |
+| family_A                | A004 | disable_m1_bias_filter=True | A_10s_breakout    | default   | None         | True                | True            | 2                 |
+| family_A                | A005 | use_time_filter=False       | A_10s_breakout    | default   | None         | True                | False           | 2                 |
+| family_B_failedbreakout | B001 | baseline                    | B_failed_breakout | default   | None         | True                | True            | 2                 |
+| family_B_failedbreakout | B002 | only_session=W1             | B_failed_breakout | default   | W1           | True                | True            | 2                 |
+| family_B_failedbreakout | B003 | use_h1_trend_filter=False   | B_failed_breakout | default   | None         | False               | True            | 2                 |
+| family_B_failedbreakout | B004 | max_losing_streak=999       | B_failed_breakout | default   | None         | True                | True            | 999               |
+| family_B_failedbreakout | B005 | use_time_filter=False       | B_failed_breakout | default   | None         | True                | False           | 2                 |
+| family_C_m1entry        | C001 | baseline                    | C_m1_close        | m1_candle | None         | True                | True            | 2                 |
+| family_C_m1entry        | C002 | only_session=W1             | C_m1_close        | m1_candle | W1           | True                | True            | 2                 |
+| family_C_m1entry        | C003 | use_h1_trend_filter=False   | C_m1_close        | m1_candle | None         | False               | True            | 2                 |
+| family_C_m1entry        | C004 | max_losing_streak=999       | C_m1_close        | m1_candle | None         | True                | True            | 999               |
+| family_C_m1entry        | C005 | use_time_filter=False       | C_m1_close        | m1_candle | None         | True                | False           | 2                 |
+| family_C_m1entry_v2     | C101 | baseline (W1 only)          | C_m1_close        | m1_candle | W1           | True                | True            | 2                 |
+| family_C_m1entry_v2     | C102 | use_h1_trend_filter=False   | C_m1_close        | m1_candle | W1           | False               | True            | 2                 |
+| family_C_m1entry_v2     | C103 | use_time_filter=False       | C_m1_close        | m1_candle | W1           | True                | False           | 2                 |
