@@ -36,6 +36,7 @@ class HypConfig:
     entry_mode: str = "A_10s_breakout"  # "A_10s_breakout" | "B_failed_breakout" | "C_m1_close" | "D_m1_momentum"
     bias_mode: str = "default"          # "default" | "m1_candle"
     max_losing_streak: int | None = None
+    regime_mode: str | None = None      # e.g. "m1_compression"
 
 
 def _run_core(cmd: list[str]) -> Path:
@@ -75,6 +76,7 @@ def _temporary_attr(obj, name: str, value):
 
 def _run_core_inprocess(cfg: HypConfig, *, from_month: str, to_month: str, run_tag: str) -> Path:
     import numpy as np
+    import pandas as pd
 
     import backtest_core as bc
 
@@ -131,9 +133,7 @@ def _run_core_inprocess(cfg: HypConfig, *, from_month: str, to_month: str, run_t
         patches.append(_temporary_attr(bc, "high_breakout_10s", _m1_close_breakout))
 
     if cfg.entry_mode == "D_m1_momentum":
-        import pandas as pd
-
-        def _m1_momentum_burst_up(df10, core_cfg):  # noqa: ANN001
+        def _m1_momentum_burst_signals(df10, core_cfg):  # noqa: ANN001
             # M1 confirmed candle is the primary trigger; 10s is execution helper only.
             o = df10["open_bid"].resample("1min", label="right", closed="right").first()
             c = df10["close_bid"].resample("1min", label="right", closed="right").last()
@@ -143,23 +143,39 @@ def _run_core_inprocess(cfg: HypConfig, *, from_month: str, to_month: str, run_t
             # N is taken from existing core config (lookback_bars) to avoid introducing a tuned number.
             body = (m1["close"] - m1["open"]).abs()
             mean_prev = body.shift(1).rolling(core_cfg.lookback_bars).mean()
-            burst_up = (m1["close"] > m1["open"]) & (body > mean_prev)
+            burst = (body > mean_prev)
+            burst_up = (m1["close"] > m1["open"]) & burst
+            burst_dn = (m1["close"] < m1["open"]) & burst
 
             # use last closed M1 only (no lookahead)
-            burst_closed = burst_up.shift(1).fillna(False)
-            return burst_closed.reindex(df10.index, method="ffill").fillna(False).to_numpy(dtype=bool)
+            burst_up_closed = burst_up.shift(1).fillna(False)
+            burst_dn_closed = burst_dn.shift(1).fillna(False)
+
+            if cfg.regime_mode == "m1_compression":
+                # Compression regime gate (D002): enable signals only when compression==True.
+                # Fixed parameters:
+                #   N = lookback_bars (existing fixed core config)
+                #   K = floor(lookback_bars/2) (derived once; do not tune)
+                n = int(core_cfg.lookback_bars)
+                k = max(1, n // 2)
+                median_prev = body.shift(1).rolling(n).median()
+                is_small = body < median_prev
+                compression = (is_small.rolling(k).sum() == k)
+                compression_closed = compression.shift(1).fillna(False)
+                burst_up_closed = burst_up_closed & compression_closed
+                burst_dn_closed = burst_dn_closed & compression_closed
+
+            sig_up_10s = burst_up_closed.reindex(df10.index, method="ffill").fillna(False).to_numpy(dtype=bool)
+            sig_dn_10s = burst_dn_closed.reindex(df10.index, method="ffill").fillna(False).to_numpy(dtype=bool)
+            return sig_up_10s, sig_dn_10s
+
+        def _m1_momentum_burst_up(df10, core_cfg):  # noqa: ANN001
+            up, _ = _m1_momentum_burst_signals(df10, core_cfg)
+            return up
 
         def _m1_momentum_burst_down(df10, core_cfg):  # noqa: ANN001
-            o = df10["open_bid"].resample("1min", label="right", closed="right").first()
-            c = df10["close_bid"].resample("1min", label="right", closed="right").last()
-            m1 = pd.DataFrame({"open": o, "close": c}).dropna()
-
-            body = (m1["close"] - m1["open"]).abs()
-            mean_prev = body.shift(1).rolling(core_cfg.lookback_bars).mean()
-            burst_dn = (m1["close"] < m1["open"]) & (body > mean_prev)
-
-            burst_closed = burst_dn.shift(1).fillna(False)
-            return burst_closed.reindex(df10.index, method="ffill").fillna(False).to_numpy(dtype=bool)
+            _, dn = _m1_momentum_burst_signals(df10, core_cfg)
+            return dn
 
         patches.append(_temporary_attr(bc, "high_breakout_10s", _m1_momentum_burst_up))
         patches.append(_temporary_attr(bc, "low_breakout_10s", _m1_momentum_burst_down))
@@ -200,6 +216,48 @@ def _run_core_inprocess(cfg: HypConfig, *, from_month: str, to_month: str, run_t
             print(f"[done] debug_signals.csv written: {pth}", flush=True)
 
         trades, monthly, monthly_session = bc.backtest(df10, core_cfg, runlog_path, run_dir)
+
+        # core.sanity_check reads CSVs back; when there are 0 trades, core may return an empty DataFrame
+        # with no columns, which would serialize to an unreadable CSV. Keep headers for zero-trade runs.
+        if trades is not None and trades.empty and len(trades.columns) == 0:
+            trades = pd.DataFrame(
+                columns=[
+                    "side",
+                    "entry_time",
+                    "exit_time",
+                    "entry_price",
+                    "exit_price",
+                    "pnl_pips",
+                    "exit_reason",
+                    "session",
+                ]
+            )
+        if monthly is not None and monthly.empty and len(monthly.columns) == 0:
+            monthly = pd.DataFrame(
+                columns=[
+                    "month",
+                    "trades",
+                    "wins",
+                    "losses",
+                    "sum_pnl_pips",
+                    "avg_pnl_pips",
+                    "winrate",
+                ]
+            )
+        if monthly_session is not None and monthly_session.empty and len(monthly_session.columns) == 0:
+            monthly_session = pd.DataFrame(
+                columns=[
+                    "month",
+                    "session",
+                    "trades",
+                    "wins",
+                    "losses",
+                    "sum_pnl_pips",
+                    "avg_pnl_pips",
+                    "winrate",
+                ]
+            )
+
         trades.to_csv(run_dir / "trades.csv", index=False)
         monthly.to_csv(run_dir / "monthly.csv", index=False)
         monthly_session.to_csv(run_dir / "monthly_by_session.csv", index=False)
@@ -281,6 +339,8 @@ def _run_variant_inprocess(cfg: HypConfig, *, run_tag: str) -> dict:
             "use_h1_trend_filter": cfg.use_h1_trend_filter,
             "use_time_filter": cfg.use_time_filter,
             "disable_m1_bias_filter": cfg.disable_m1_bias_filter,
+            "entry_mode": cfg.entry_mode,
+            "regime_mode": cfg.regime_mode,
         },
     }
     (out_root / "config.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -456,7 +516,7 @@ def parse_args() -> argparse.Namespace:
             "B001", "B002", "B003", "B004", "B005", "B006", "B007", "B008",
             "C001", "C002", "C003", "C004", "C005",
             "C101", "C102", "C103",
-            "D001",
+            "D001", "D002",
         ],
     )
     p.add_argument("--symbol", default="USDJPY")
@@ -596,29 +656,6 @@ def main() -> int:
         summary_path = _results_root() / "summary_family_D_momentum.csv"
         summary_path.parent.mkdir(parents=True, exist_ok=True)
 
-        cfg = HypConfig(
-            family=family,
-            hyp="D001",
-            symbol=str(args.symbol).upper(),
-            root=str(root),
-            only_session="W1",
-            verify_from_month=str(args.verify_from_month),
-            verify_to_month=str(args.verify_to_month),
-            forward_from_month=str(args.forward_from_month),
-            forward_to_month=str(args.forward_to_month),
-            spread_pips=float(args.spread_pips),
-            entry_mode="D_m1_momentum",
-            disable_m1_bias_filter=True,
-        )
-        meta = _run_variant_inprocess(cfg, run_tag="d001")
-
-        verify_sum = float(meta["verify"]["sum_pnl_pips"])
-        verify_trades = int(meta["verify"]["trades"])
-        forward_sum = float(meta["forward"]["sum_pnl_pips"])
-        forward_trades = int(meta["forward"]["trades"])
-
-        judge = "conditional" if (forward_sum >= 0) or (forward_sum > verify_sum) else "dead"
-
         with summary_path.open("w", encoding="utf-8", newline="") as f:
             w = csv.DictWriter(
                 f,
@@ -632,16 +669,43 @@ def main() -> int:
                 ],
             )
             w.writeheader()
-            w.writerow(
-                {
-                    "hyp": "D001",
-                    "verify_sum_pnl_pips": verify_sum,
-                    "verify_trades": verify_trades,
-                    "forward_sum_pnl_pips": forward_sum,
-                    "forward_trades": forward_trades,
-                    "judge": judge,
-                }
-            )
+            for hyp, regime_mode in [
+                ("D001", None),
+                ("D002", "m1_compression"),
+            ]:
+                cfg = HypConfig(
+                    family=family,
+                    hyp=hyp,
+                    symbol=str(args.symbol).upper(),
+                    root=str(root),
+                    only_session="W1",
+                    verify_from_month=str(args.verify_from_month),
+                    verify_to_month=str(args.verify_to_month),
+                    forward_from_month=str(args.forward_from_month),
+                    forward_to_month=str(args.forward_to_month),
+                    spread_pips=float(args.spread_pips),
+                    entry_mode="D_m1_momentum",
+                    disable_m1_bias_filter=True,
+                    regime_mode=regime_mode,
+                )
+                meta = _run_variant_inprocess(cfg, run_tag=hyp.lower())
+
+                verify_sum = float(meta["verify"]["sum_pnl_pips"])
+                verify_trades = int(meta["verify"]["trades"])
+                forward_sum = float(meta["forward"]["sum_pnl_pips"])
+                forward_trades = int(meta["forward"]["trades"])
+                judge = "conditional" if (forward_sum >= 0) or (forward_sum > verify_sum) else "dead"
+
+                w.writerow(
+                    {
+                        "hyp": hyp,
+                        "verify_sum_pnl_pips": verify_sum,
+                        "verify_trades": verify_trades,
+                        "forward_sum_pnl_pips": forward_sum,
+                        "forward_trades": forward_trades,
+                        "judge": judge,
+                    }
+                )
 
         print(f"[runner] wrote summary: {summary_path}", flush=True)
         return 0
@@ -909,10 +973,10 @@ def main() -> int:
         print("[runner] done. summary:", json.dumps(meta, ensure_ascii=False), flush=True)
         return 0
 
-    if args.hyp == "D001":
+    if args.hyp in ("D001", "D002"):
         cfg = HypConfig(
             family="family_D_momentum",
-            hyp="D001",
+            hyp=str(args.hyp),
             symbol=str(args.symbol).upper(),
             root=str(root),
             only_session="W1",
@@ -923,8 +987,9 @@ def main() -> int:
             spread_pips=float(args.spread_pips),
             entry_mode="D_m1_momentum",
             disable_m1_bias_filter=True,
+            regime_mode=("m1_compression" if args.hyp == "D002" else None),
         )
-        meta = _run_variant_inprocess(cfg, run_tag="d001")
+        meta = _run_variant_inprocess(cfg, run_tag=str(args.hyp).lower())
         print("[runner] done. summary:", json.dumps(meta, ensure_ascii=False), flush=True)
         return 0
 
