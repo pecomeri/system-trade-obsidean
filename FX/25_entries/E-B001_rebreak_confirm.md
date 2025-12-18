@@ -68,6 +68,7 @@ status: draft
 - `setup_ok, setup_log`（`S-001` の判定結果とログ。`range_high/range_low/false_break` を含む）
 - `pivots`（pivot 配列：`(ts, kind=HIGH/LOW, price)`。確定ルールは TODO）
 - `bars`（判定に使う確定足の時系列。足種別は実装側で選ぶ）
+  - 本 E-B001 では `bars=10秒足` とし、`next_bar` は 10秒足の次足 open を指す（M5の次足ではない）
 
 出力：
 - `ok: bool`
@@ -148,3 +149,4 @@ def judge_EB001(setup_ok, setup_log, pivots, bars) -> (ok, log):
 
 - 2025-12-17 定義（Contract）追記
 - 2025-12-17 用語定義（Glossary）・擬似コード（Pseudo）追記
+- 2025-12-17 最小追記パッチ（pullback区間固定 / next_bar時間足固定 / NA導入）

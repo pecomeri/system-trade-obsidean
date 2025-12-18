@@ -20,6 +20,9 @@ status: draft
 - Filter の役割：
   - 勝率改善装置ではなく「明確な地雷回避」に限定する
   - Reject 率が高すぎる設計は NG（過剰フィルター検知を必須にする）
+  - 本 F-C001 は Entry 後段のフィルターとして扱う（Setup単体の弾きではない）
+  - `entry_ok=False` のケースは Reject ではなく NA（適用外）とする
+  - Reject 率の母数は `entry_ok=True` の試行のみ（NA を含めない）
 
 - Reject 条件（いずれかで Reject）：
   1) 再ブレイクが一定時間内に起きない（時間は TODO）
@@ -65,8 +68,8 @@ status: draft
 - `bars10s`（10秒足の確定足時系列。timeout 単位は 10秒足のバー本数で固定）
 
 出力：
-- `pass: bool`
-- `reject_code: str | None`
+- `status: Pass / Reject / NA`
+- `reject_code: str | None`（NA の場合は None）
 - `log: dict`（reject 判定時刻、理由、補助情報）
 
 擬似コード（TODO は値だけ未決。単位と参照は固定）：
@@ -76,13 +79,13 @@ TIMEOUT_BARS_10S = TODO        # 単位：10秒足バー本数（秒ではなく
 BAND_WIDTH_PIPS = TODO         # 「同一価格帯」の幅（pips）。値はTODO
 MULTI_BREAK_M = TODO           # 「複数回」の閾値（回数）。値はTODO
 
-def judge_FC001(setup_ok, entry_ok, entry_log, pivots, bars10s) -> (pass, reject_code, log):
+def judge_FC001(setup_ok, entry_ok, entry_log, pivots, bars10s) -> (status, reject_code, log):
   log = {}
   if not setup_ok:
     return (Reject, "SETUP_NOT_OK", log)
   if not entry_ok:
-    # Filter は Entry の前段で使う場合もあるが、ここでは観測/ログ上は Reject として扱う
-    return (Reject, "ENTRY_NOT_OK", log)
+    # 本 F-C001 では entry 非成立はフィルタ判定の母数に入れない
+    return (NA, None, log + {"reason":"ENTRY_NOT_OK_NA"})
 
   level = entry_log["level"]
   first_break_ts = entry_log["first_break_ts"]
@@ -130,3 +133,4 @@ def judge_FC001(setup_ok, entry_ok, entry_log, pivots, bars10s) -> (pass, reject
 
 - 2025-12-17 定義（Contract）追記
 - 2025-12-17 用語定義（Glossary）・擬似コード（Pseudo）追記
+- 2025-12-17 最小追記パッチ（pullback区間固定 / next_bar時間足固定 / NA導入）

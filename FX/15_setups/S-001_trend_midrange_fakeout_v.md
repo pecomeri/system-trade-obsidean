@@ -54,7 +54,9 @@ timeframes:
   - pivot の確定ルールは TODO（例：左右 `PIVOT_N=TODO` 本、または別方式）だが、**pivot は確定足のみ**から作る。
 - 押しレンジ（pullback range）
   - 押しレンジ上下＝「押し開始〜押し終了」区間の**確定足**の高値/安値（または pivot で定義する場合は該当 pivot）。
-  - 押しの開始/終了（区間の切り方）は pivot に基づき TODO（後から変えない前提で決める）。
+  - 押し開始＝impulse 終点 pivot の確定時刻。
+  - 押し終了＝false break の `return_ts`（レンジ内復帰の確定時刻）。
+  - 本 S-001 では暫定的に上記で固定（変更は experiment_id を切る）。
 - レンジ内部に復帰（return inside）
   - 復帰＝確定足の終値（close）が押しレンジ内（`range_low <= close <= range_high`）に戻ったこと。
 - 抜け未遂（false break）
@@ -87,6 +89,9 @@ def judge_S001(regime, pivots, bars) -> (ok, log):
   if impulse is None or pullback is None:
     return (No, log + {"reason":"NO_IMPULSE_OR_PULLBACK"})
 
+  # pullback 区間の start/end は固定：
+  #   start = impulse 終点 pivot の確定時刻
+  #   end   = false_break.return_ts（レンジ内復帰の確定時刻）
   pullback_range = range_of_confirmed_bars(bars, start=pullback.start_ts, end=pullback.end_ts)
   range_high = max(pullback_range.high)
   range_low  = min(pullback_range.low)
@@ -142,3 +147,4 @@ def judge_S001(regime, pivots, bars) -> (ok, log):
 
 - 2025-12-17 定義（Contract）追記
 - 2025-12-17 用語定義（Glossary）・擬似コード（Pseudo）追記
+- 2025-12-17 最小追記パッチ（pullback区間固定 / next_bar時間足固定 / NA導入）
