@@ -1,7 +1,7 @@
 ---
 regime: w1_only
 strategy: m1_close_trigger + 10s_execution + m1_candle_bias
-result: conditional
+result: dead
 ---
 
 差分（C101→C102）：
@@ -12,3 +12,6 @@ result: conditional
 - 出力: `results/family_C_m1entry_v2/C102/`
 
 理由：2025 forward が C101 より改善（`-324 → -254`）
+
+
+理由：改善は取引数依存で、状態説明ができない

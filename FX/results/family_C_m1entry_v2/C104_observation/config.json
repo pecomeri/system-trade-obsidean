@@ -1,0 +1,14 @@
+{
+  "created_at": "2025-12-18T09:57:25",
+  "inputs": {
+    "c101_monthly": "FX/results/family_C_m1entry_v2/C101/monthly.csv",
+    "c101_monthly_by_session": "FX/results/family_C_m1entry_v2/C101/monthly_by_session.csv",
+    "c102_monthly": "FX/results/family_C_m1entry_v2/C102/monthly.csv",
+    "c102_monthly_by_session": "FX/results/family_C_m1entry_v2/C102/monthly_by_session.csv"
+  },
+  "outputs": {
+    "merged_monthly_2025": "FX/results/family_C_m1entry_v2/C104_observation/merged_monthly_2025.csv",
+    "merged_monthly_by_session_2025": "FX/results/family_C_m1entry_v2/C104_observation/merged_monthly_by_session_2025.csv",
+    "summary": "FX/results/family_C_m1entry_v2/C104_observation/summary.txt"
+  }
+}

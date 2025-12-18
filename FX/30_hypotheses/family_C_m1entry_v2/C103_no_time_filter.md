@@ -12,3 +12,5 @@ result: dead
 - 出力: `results/family_C_m1entry_v2/C103/`
 
 理由：2025 forward が負（`sum_pnl_pips=-324`）で、C101から改善なし
+
+

@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "FX/30_hypotheses/family_C_m1entry_v2/C102_no_h1_filter.md",
+                "file": "FX/30_hypotheses/family_C_m1entry/C002_W1_only.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "C102_no_h1_filter"
+              "title": "C002_W1_only"
             }
           }
         ]
@@ -114,7 +114,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "FX/30_hypotheses/family_C_m1entry_v2/C102_no_h1_filter.md",
+                "file": "FX/30_hypotheses/family_C_m1entry/C002_W1_only.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -124,7 +124,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "C102_no_h1_filterへのバックリンク"
+              "title": "C002_W1_onlyへのバックリンク"
             }
           },
           {
@@ -203,28 +203,30 @@
       "bases:Create new base": false
     }
   },
-  "active": "f59f1bb2e1fdaa14",
+  "active": "dcb8e0cb9e4f8ed6",
   "lastOpenFiles": [
+    "FX/30_hypotheses/family_C_m1entry/C003_no_h1_filter.md",
+    "FX/30_hypotheses/family_C_m1entry/C004_disable_daily_stop.md",
+    "FX/30_hypotheses/family_C_m1entry/C002_W1_only.md",
+    "FX/30_hypotheses/family_C_m1entry/C001_baseline.md",
+    "FX/30_hypotheses/family_B_failedbreakout/B006_observation_h1ratio.md",
+    "FX/30_hypotheses/family_B_failedbreakout/B005_no_time_filter.md",
+    "FX/30_hypotheses/family_B_failedbreakout/B004_disable_daily_stop.md",
+    "FX/30_hypotheses/family_B_failedbreakout/B003_no_h1_filter.md",
+    "FX/30_hypotheses/family_B_failedbreakout/B002_W1_only.md",
+    "FX/30_hypotheses/family_C_m1entry_v2/C102_no_h1_filter.md",
+    "FX/30_hypotheses/family_C_m1entry_v2/C103_no_time_filter.md",
+    "FX/30_hypotheses/family_C_m1entry_v2/C101_baseline.md",
     "FX/results/family_C_m1entry_v2/C104_observation/config.json",
     "FX/results/family_C_m1entry_v2/C104_observation/summary.txt",
     "FX/results/family_C_m1entry_v2/C104_observation/merged_monthly_by_session_2025.csv",
     "FX/results/family_C_m1entry_v2/C104_observation/merged_monthly_2025.csv",
     "FX/results/family_C_m1entry_v2/C104_observation",
-    "FX/30_hypotheses/family_C_m1entry/C002_W1_only.md",
-    "FX/30_hypotheses/family_C_m1entry_v2/C103_no_time_filter.md",
     "FX/code/polymarket/market_events/2025-12-17.ndjson.gz",
     "FX/code/polymarket/market_events/2025-12-17.ndjson.gz.cDbe95bF",
     "FX/code/polymarket/market_events",
-    "FX/30_hypotheses/family_C_m1entry_v2/C102_no_h1_filter.md",
-    "FX/30_hypotheses/family_C_m1entry_v2/C101_baseline.md",
     "FX/30_hypotheses/family_C_m1entry/C005_no_time_filter.md",
-    "FX/30_hypotheses/family_C_m1entry/C004_disable_daily_stop.md",
-    "FX/30_hypotheses/family_C_m1entry/C003_no_h1_filter.md",
-    "FX/30_hypotheses/family_C_m1entry/C001_baseline.md",
     "FX/30_hypotheses/family_B_failedbreakout/B001_baseline.md",
-    "FX/30_hypotheses/family_B_failedbreakout/B002_W1_only.md",
-    "FX/30_hypotheses/family_B_failedbreakout/B005_no_time_filter.md",
-    "FX/30_hypotheses/family_B_failedbreakout/B003_no_h1_filter.md",
     "FX/30_hypotheses/family_A_breakout/A005：時間帯なし（ロンドンフィルターの価値を測る）.md",
     "FX/30_hypotheses/family_A_breakout/A003：H1なし（上位足フィルターの価値を測る）.md",
     "FX/30_hypotheses/family_A_breakout/A001：ベースライン（板フィルターなし）.md",
@@ -237,9 +239,7 @@
     "FX/_review/2025-12-protocol/definition_check.md",
     "_review/2025-12-ai-review/README.md",
     "_review/2025-12-ai-review/review_context.md",
-    "FX/15_setups/S-001_trend_midrange_fakeout_v.md",
     "FX/results/_summary.csv",
-    "FX/_review/2025-12-protocol/tree_fx.txt",
-    "FX/_review/2025-12-protocol/experiment_registry.csv"
+    "FX/_review/2025-12-protocol/tree_fx.txt"
   ]
 }

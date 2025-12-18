@@ -1,0 +1,35 @@
+C104 observation: C101 vs C102 (2025 forward)
+
+[C101] bias check (2025)
+- total_pnl_pips: -324.0
+- positive_months: 4 / negative_months: 8
+- top_share_of_total_positive:
+  - top1_share_of_total: 0.553
+  - top2_share_of_total: 0.895
+  - top3_share_of_total: 0.947
+- worst_months (bottom3):
+  - 2025-03: sum_pnl_pips=-104.0, trades=28
+  - 2025-04: sum_pnl_pips=-90.0, trades=20
+  - 2025-02: sum_pnl_pips=-80.0, trades=19
+
+[C102] bias check (2025)
+- total_pnl_pips: -254.0
+- positive_months: 5 / negative_months: 7
+- top_share_of_total_positive:
+  - top1_share_of_total: 0.394
+  - top2_share_of_total: 0.648
+  - top3_share_of_total: 0.845
+- worst_months (bottom3):
+  - 2025-04: sum_pnl_pips=-178.0, trades=75
+  - 2025-07: sum_pnl_pips=-86.0, trades=68
+  - 2025-05: sum_pnl_pips=-60.0, trades=83
+
+[Delta] contribution (C102 - C101)
+- top3 improved months:
+  - 2025-03: delta_sum_pnl_pips=102.0, delta_trades=47
+  - 2025-08: delta_sum_pnl_pips=62.0, delta_trades=40
+  - 2025-01: delta_sum_pnl_pips=56.0, delta_trades=67
+- top3 worsened months:
+  - 2025-07: delta_sum_pnl_pips=-90.0, delta_trades=20
+  - 2025-04: delta_sum_pnl_pips=-88.0, delta_trades=55
+  - 2025-11: delta_sum_pnl_pips=-50.0, delta_trades=27
