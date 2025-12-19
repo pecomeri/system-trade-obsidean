@@ -203,8 +203,14 @@
       "bases:Create new base": false
     }
   },
-  "active": "90af20c70870ac66",
+  "active": "f59f1bb2e1fdaa14",
   "lastOpenFiles": [
+    "FX/results/family_D_momentum/D004/diagnostics/entry_by_dow_hour_summary.md",
+    "FX/results/family_D_momentum/D004/diagnostics/entry_by_dow_hour_pivot.csv",
+    "FX/results/family_D_momentum/D004/diagnostics/entry_by_dow_hour.csv",
+    "FX/results/family_D_momentum/D004/diagnostics",
+    "FX/code/postprocess/entry_time_analysis.py",
+    "FX/code/postprocess",
     "FX/30_hypotheses/family_D_momentum/D005_no_weekend_entry.md",
     "FX/27_filters/no_weekend_entry.md",
     "FX/10_regimes/h1_trend_up.md",
@@ -215,11 +221,6 @@
     "FX/results/family_D_momentum/D005/charts/trade_221.html",
     "FX/results/family_D_momentum/D005/charts/trade_219.html",
     "FX/results/family_D_momentum/D005/charts/trade_218.html",
-    "FX/results/family_D_momentum/D005/charts/trade_217.html",
-    "FX/results/family_D_momentum/D005/charts/trade_214.html",
-    "FX/results/family_D_momentum/D005/charts/trade_208.html",
-    "FX/results/family_D_momentum/D005/charts/trade_207.html",
-    "FX/results/family_D_momentum/D005/charts/trade_2.html",
     "FX/15_filters/no_weekend_entry.md",
     "FX/10_regimes/00_プロンプト.md",
     "FX/30_hypotheses/family_D_momentum/D005a_m1_momentum_burst_london_only.md",
@@ -239,7 +240,6 @@
     "FX/30_hypotheses/family_D_momentum/D001.md",
     "FX/results/family_D_momentum/D003/README.md",
     "FX/results/family_D_momentum/D004/README.md",
-    "FX/30_hypotheses/family_A_breakout/A001：ベースライン（板フィルターなし）.md",
-    "FX/30_hypotheses/family_C_m1entry/C005_no_time_filter.md"
+    "FX/30_hypotheses/family_A_breakout/A001：ベースライン（板フィルターなし）.md"
   ]
 }
