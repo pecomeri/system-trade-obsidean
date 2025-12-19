@@ -11,8 +11,8 @@ regimes:
   - none
 timeframe_signal: M1
 timeframe_exec: 10s
-status: draft
-result: observing
+status: observed
+result: strong_break_exhaustion
 tags:
   - fx
   - family_D_momentum
@@ -84,3 +84,56 @@ tags:
 - buy, sell トレード件数（verify / forward）:
 - buy と比較して偏りはあるか:
 - 次の観測へ進むか（D007/D008をsell側でも回すか）:
+
+### 実行結果（事実）
+- 実行条件:
+  - verify=2024 / forward=2025
+  - only_session=None / use_time_filter=False（24h観測）
+  - use_h1_trend_filter=True（buyはh1_trend_up / sellはh1_trend_down を適用）
+  - allow_sell=True / allow_buy=True
+- trades 件数（verify / forward）:
+  - 2024 verify: BUY=805 / SELL=507（total=1312）
+  - 2025 forward: BUY=590 / SELL=639（total=1229）
+- side別PnL（verify / forward）:
+  - 2024 verify:
+    - BUY: sum_pnl_pips=-702.0 / avg_pnl_pips=-0.87
+    - SELL: sum_pnl_pips=-516.0 / avg_pnl_pips=-1.02
+  - 2025 forward:
+    - BUY: sum_pnl_pips=-840.0 / avg_pnl_pips=-1.42
+    - SELL: sum_pnl_pips=-604.0 / avg_pnl_pips=-0.95
+- 自己チェック:
+  - D004の `monthly.csv` / `monthly_by_session.csv` の sha256 を比較し、変更なし
+
+### D008形式の観測（by side / early_loss vs survivor）
+- 生成物:
+  - `FX/results/family_D_momentum/D009/diagnostics/early_vs_survivor_features_by_side.csv`
+  - `FX/results/family_D_momentum/D009/diagnostics/early_vs_survivor_summary_by_side.md`
+- group定義（固定）:
+  - holding_time_min = (exit_time - entry_time).total_seconds()/60
+  - early_loss: 0 <= holding_time_min <= 3
+  - survivor: holding_time_min >= 20
+- group件数（period×side）:
+  - 2024 verify:
+    - BUY: early_loss=50 survivor=456
+    - SELL: early_loss=84 survivor=158
+  - 2025 forward:
+    - BUY: early_loss=43 survivor=293
+    - SELL: early_loss=85 survivor=218
+- 差が大きい特徴量（side別 top3 / delta_median = median_survivor - median_early）:
+  - BUY:
+    - break_margin_pips: forward=-1.9000 / verify=-3.0500（sign=match）
+    - burst_strength: forward=-0.6365 / verify=0.0097（sign=mismatch）
+    - next_m1_body_ratio: forward=-0.0859 / verify=-0.0218（sign=match）
+  - SELL:
+    - break_margin_pips: forward=-1.6000 / verify=-3.1000（sign=match）
+    - body: forward=-0.0325 / verify=-0.0400（sign=match）
+    - body_ratio: forward=0.0297 / verify=0.0664（sign=match）
+
+
+### 結論
+
+- 即死トレードは BUY/SELLともに「break_marginが大きい」方向に偏る
+    
+- SELLではさらに「bodyが大きい」「body_ratioはsurvivorの方が大きい（ヒゲが短い）」が一貫
+    
+- burst_strength（BUY）は sign mismatch で保留

@@ -40,6 +40,8 @@ class HypConfig:
     dump_trades: bool = False
     momentum_mode: str | None = None    # e.g. "D004_continuation"
     no_weekend_entry: bool = False      # D005: block new entries near week transition
+    allow_buy: bool | None = None
+    allow_sell: bool | None = None
 
 
 def _run_core(cmd: list[str]) -> Path:
@@ -98,6 +100,10 @@ def _run_core_inprocess(cfg: HypConfig, *, from_month: str, to_month: str, run_t
         core_cfg = replace(core_cfg, use_time_filter=bool(cfg.use_time_filter))
     if cfg.max_losing_streak is not None:
         core_cfg = replace(core_cfg, max_losing_streak=int(cfg.max_losing_streak))
+    if cfg.allow_buy is not None:
+        core_cfg = replace(core_cfg, allow_buy=bool(cfg.allow_buy))
+    if cfg.allow_sell is not None:
+        core_cfg = replace(core_cfg, allow_sell=bool(cfg.allow_sell))
 
     patches: list[contextlib.AbstractContextManager] = []
     if cfg.disable_m1_bias_filter:
@@ -638,7 +644,7 @@ def parse_args() -> argparse.Namespace:
             "B001", "B002", "B003", "B004", "B005", "B006", "B007", "B008",
             "C001", "C002", "C003", "C004", "C005",
             "C101", "C102", "C103",
-            "D001", "D002", "D003", "D004", "D005", "D006",
+            "D001", "D002", "D003", "D004", "D005", "D006", "D009",
         ],
     )
     p.add_argument("--symbol", default="USDJPY")
@@ -1127,6 +1133,35 @@ def main() -> int:
             no_weekend_entry=(args.hyp == "D005"),
         )
         meta = _run_variant_inprocess(cfg, run_tag=str(args.hyp).lower())
+        print("[runner] done. summary:", json.dumps(meta, ensure_ascii=False), flush=True)
+        return 0
+
+    if args.hyp == "D009":
+        # D009: sell-side observation.
+        # - strategy: D004_continuation signals (unchanged trigger)
+        # - allow_sell=True (and allow_buy left as True)
+        # - enable bias (do NOT force bias=+1), otherwise sells cannot happen
+        # - observe 24h by default (no session/time filter)
+        cfg = HypConfig(
+            family="family_D_momentum",
+            hyp="D009",
+            symbol=str(args.symbol).upper(),
+            root=str(root),
+            only_session=None,
+            verify_from_month=str(args.verify_from_month),
+            verify_to_month=str(args.verify_to_month),
+            forward_from_month=str(args.forward_from_month),
+            forward_to_month=str(args.forward_to_month),
+            spread_pips=float(args.spread_pips),
+            use_h1_trend_filter=True,
+            use_time_filter=False,
+            entry_mode="D_m1_momentum",
+            disable_m1_bias_filter=False,
+            dump_trades=True,
+            momentum_mode="D004_continuation",
+            allow_sell=True,
+        )
+        meta = _run_variant_inprocess(cfg, run_tag="d009")
         print("[runner] done. summary:", json.dumps(meta, ensure_ascii=False), flush=True)
         return 0
 

@@ -226,6 +226,22 @@ def compute_h1_uptrend(df10: pd.DataFrame, cfg: Config) -> np.ndarray:
     return ok_closed.reindex(df10.index, method="ffill").fillna(False).to_numpy(dtype=bool)
 
 
+def compute_h1_downtrend(df10: pd.DataFrame, cfg: Config) -> np.ndarray:
+    """
+    Mirror of compute_h1_uptrend (downtrend only).
+    Contract:
+      ok = (h1_close < h1_ema) & (h1_ema < ema_past)
+      then shift(1) and ffill to 10s.
+    """
+    close = df10["close_bid"]
+    h1_close = close.resample("1H").last().dropna()
+    h1_ema = ema(h1_close, cfg.h1_ema_period)
+    ema_past = h1_ema.shift(cfg.h1_ema_slope_bars)
+    ok = (h1_close < h1_ema) & (h1_ema < ema_past)
+    ok_closed = ok.shift(1)
+    return ok_closed.reindex(df10.index, method="ffill").fillna(False).to_numpy(dtype=bool)
+
+
 def compute_bias_htf(df10: pd.DataFrame, cfg: Config) -> np.ndarray:
     o = df10["open_bid"].resample(cfg.higher_tf).first()
     h = df10["high_bid"].resample(cfg.higher_tf).max()
@@ -268,9 +284,12 @@ def dump_debug_signals(df10: pd.DataFrame, cfg: Config, run_dir: Path) -> Path:
     look = cfg.lookback_bars
     prev_high = df10["high_bid"].shift(1).rolling(look).max()
     breakout_hi = (df10["close_bid"] > prev_high).fillna(False)
+    prev_low = df10["low_bid"].shift(1).rolling(look).min()
+    breakout_lo = (df10["close_bid"] < prev_low).fillna(False)
 
     bias = compute_bias_htf(df10, cfg)
-    h1_ok = compute_h1_uptrend(df10, cfg) if cfg.use_h1_trend_filter else np.ones(len(df10), dtype=bool)
+    h1_up = compute_h1_uptrend(df10, cfg) if cfg.use_h1_trend_filter else np.ones(len(df10), dtype=bool)
+    h1_dn = compute_h1_downtrend(df10, cfg) if cfg.use_h1_trend_filter else np.ones(len(df10), dtype=bool)
     time_ok = np.array([(not cfg.use_time_filter) or is_trading_time(ts, cfg) for ts in idx], dtype=bool)
     sess = np.array([session_label(ts, cfg) for ts in idx])
 
@@ -279,10 +298,13 @@ def dump_debug_signals(df10: pd.DataFrame, cfg: Config, run_dir: Path) -> Path:
         "session": sess,
         "time_ok": time_ok.astype(int),
         "bias": bias.astype(int),
-        "h1_ok": h1_ok.astype(int),
+        "h1_up": h1_up.astype(int),
+        "h1_dn": h1_dn.astype(int),
         "close_bid": df10["close_bid"].to_numpy(),
         f"prev_high_{cfg.lookback_bars}": prev_high.to_numpy(),
+        f"prev_low_{cfg.lookback_bars}": prev_low.to_numpy(),
         "breakout_hi": breakout_hi.to_numpy().astype(int),
+        "breakout_lo": breakout_lo.to_numpy().astype(int),
     }).loc[mask].copy()
 
     path = run_dir / "debug_signals.csv"
@@ -301,7 +323,8 @@ def backtest(df10: pd.DataFrame, cfg: Config, runlog_path: Path, run_dir: Path) 
 
     time_ok = np.array([(not cfg.use_time_filter) or is_trading_time(ts, cfg) for ts in idx], dtype=bool)
     bias = compute_bias_htf(df10, cfg)
-    h1_ok = compute_h1_uptrend(df10, cfg) if cfg.use_h1_trend_filter else np.ones(n_bars, dtype=bool)
+    h1_up = compute_h1_uptrend(df10, cfg) if cfg.use_h1_trend_filter else np.ones(n_bars, dtype=bool)
+    h1_dn = compute_h1_downtrend(df10, cfg) if cfg.use_h1_trend_filter else np.ones(n_bars, dtype=bool)
     brk_hi = high_breakout_10s(df10, cfg)
     brk_lo = low_breakout_10s(df10, cfg)
 
@@ -420,7 +443,10 @@ def backtest(df10: pd.DataFrame, cfg: Config, runlog_path: Path, run_dir: Path) 
             if b == 0:
                 continue
 
-            if b == 1 and cfg.use_h1_trend_filter and not bool(h1_ok[i]):
+            if b == 1 and cfg.use_h1_trend_filter and not bool(h1_up[i]):
+                continue
+
+            if b == -1 and cfg.use_h1_trend_filter and not bool(h1_dn[i]):
                 continue
 
             if b == 1 and cfg.allow_buy and bool(brk_hi[i]):
@@ -487,11 +513,26 @@ def sanity_check(run_dir: Path) -> None:
         print("[check] trades.csv not found -> skip", flush=True)
         return
 
+    cfg_path = run_dir / "core_config.json"
+    if not cfg_path.exists():
+        cfg_path = run_dir / "config.json"
+    allow_sell = False
+    if cfg_path.exists():
+        try:
+            cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
+            allow_sell = bool(cfg.get("allow_sell", False))
+        except Exception:  # noqa: BLE001
+            allow_sell = False
+
     trades = pd.read_csv(trades_path)
     if "side" in trades.columns:
-        if (trades["side"] == "sell").any():
-            raise AssertionError("SanityCheck failed: sell trades exist but should be buy-only.")
-        print("[check] OK: buy-only (no sell trades)", flush=True)
+        if not allow_sell:
+            if (trades["side"] == "sell").any():
+                raise AssertionError("SanityCheck failed: sell trades exist but should be buy-only.")
+            print("[check] OK: buy-only (no sell trades)", flush=True)
+        else:
+            vc = trades["side"].value_counts().to_dict()
+            print(f"[check] OK: allow_sell=True side_counts={vc}", flush=True)
 
     if dbg_entries.exists() and dbg_signals.exists():
         ent = pd.read_csv(dbg_entries)
@@ -504,13 +545,28 @@ def sanity_check(run_dir: Path) -> None:
                 bad.append((t, "signal_bar_time_not_found"))
                 continue
             row = sig.loc[t]
-            cond = (row["time_ok"] == 1) and (row["bias"] == 1) and (row["h1_ok"] == 1) and (row["breakout_hi"] == 1)
+            # Backward compatible: treat a buy entry as (bias=1,h1_up=1,breakout_hi=1).
+            # If allow_sell=True and debug_entries contains sells, accept (bias=-1,h1_dn=1,breakout_lo=1) too.
+            is_buy_ok = (
+                (row["time_ok"] == 1)
+                and (row["bias"] == 1)
+                and (row.get("h1_up", row.get("h1_ok", 0)) == 1)
+                and (row["breakout_hi"] == 1)
+            )
+            is_sell_ok = (
+                allow_sell
+                and (row["time_ok"] == 1)
+                and (row["bias"] == -1)
+                and (row.get("h1_dn", 0) == 1)
+                and (row.get("breakout_lo", 0) == 1)
+            )
+            cond = bool(is_buy_ok or is_sell_ok)
             if not cond:
-                bad.append((t, f"cond_failed time_ok={row['time_ok']} bias={row['bias']} h1_ok={row['h1_ok']} breakout={row['breakout_hi']}"))
+                bad.append((t, f"cond_failed time_ok={row['time_ok']} bias={row['bias']}"))
 
         if bad:
             raise AssertionError(f"SanityCheck failed: entries violate conditions: {bad[:5]} ... total={len(bad)}")
-        print("[check] OK: every entry satisfies (time_ok=1,bias=1,h1_ok=1,breakout_hi=1)", flush=True)
+        print("[check] OK: every entry satisfies entry conditions (buy or sell)", flush=True)
 
 
 def make_run_dir(cfg: Config) -> Path:

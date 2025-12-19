@@ -2,22 +2,16 @@
 id: D008
 family: family_D_momentum
 type: observation_variant
-
 strategy: "[[D004_m1_momentum_burst_break_prev]]"
 base_strategy: "[[D004_m1_momentum_burst_break_prev]]"
-
 filters:
   - "[[h1_trend_up]]"
-
 regimes:
   - none
-
 timeframe_signal: M1
 timeframe_exec: 10s
-
-status: draft
-result: observing
-
+status: observed
+result: strong_break_exhaustion
 tags:
   - fx
   - family_D_momentum
@@ -131,3 +125,14 @@ tags:
 - 次に切る仮説（最大2つ、名前だけ）:
   - D008a_filter_low_break_margin
   - D008b_filter_low_body
+
+
+
+- early_loss は break_margin / body が **大きい側**に寄る
+    
+- したがって「弱いブレイク回避」ではなく「強すぎるブレイクの罠」を疑う
+    
+- 次の観測は ratio 化（break_margin/body）と burst_strength で確認
+
+ここでbuyしか見てないことに気づいた。
+[[D009_observe_sell_side]]でsellもいれて観測し直し。
