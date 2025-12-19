@@ -216,3 +216,19 @@ D系の基盤観測（D009：BUY/SELL 両方、24h）を母集団として、
 ## 補足（BUYの非単調）
 - verify BUY の early_loss_rate は mid が最大。サンプル数は short=385 / mid=140 / long=280 で、mid が最小。
 - forward BUY は short→mid→long の減少方向（0.0831→0.0745→0.0564）なので、BUYは追加観測が必要。
+
+
+
+- pre_range_length_effect: **yes（all / sell は明確）**
+    
+- buy: **inconclusive（verify非単調、forwardは減少）**
+    
+- affected_metric:
+    
+    - early_loss_rate（all/sell）
+        
+    - holding_time_distribution（all）
+        
+- verify_thresholds:
+    
+    - q33=0, q66=3, N=20
