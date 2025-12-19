@@ -2,7 +2,7 @@
 id: no_weekend_entry
 type: filter
 scope: time_structure
-status: active
+status: hold
 tags:
   - fx
   - filter

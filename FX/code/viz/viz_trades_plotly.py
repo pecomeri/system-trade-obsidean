@@ -319,6 +319,8 @@ def _render_trade_plotly(*, m1, trade, out_html: Path) -> None:
         xaxis=dict(fixedrange=False),
         yaxis=dict(fixedrange=False),
     )
+    if len(m1.index) > 0:
+        fig.update_xaxes(range=[m1.index.min(), m1.index.max()])
     out_html.parent.mkdir(parents=True, exist_ok=True)
     fig.write_html(
         str(out_html),
@@ -591,7 +593,24 @@ def main() -> int:
     p.add_argument("--symbol", required=True)
     p.add_argument("--data_root", default="FX/code/dukas_out_v2")
     p.add_argument("--window_minutes", type=int, default=30)
+    p.add_argument(
+        "--window_anchor",
+        default="auto",
+        choices=["auto", "entry", "exit", "span"],
+        help=(
+            "Which timestamp to anchor the window on. "
+            "entry/exit=±window around that point. "
+            "span=(entry-window .. exit+window). "
+            "auto=entry unless exit is out of window, then exit."
+        ),
+    )
     p.add_argument("--top_n", type=int, default=30)
+    p.add_argument(
+        "--trade_id",
+        type=int,
+        action="append",
+        help="Render only the specified trade_id (can be passed multiple times). Overrides --top_n/--sort_by.",
+    )
     p.add_argument(
         "--sort_by",
         default="pnl_pips_asc",
@@ -623,7 +642,12 @@ def main() -> int:
     trades["exit_time"] = pd.to_datetime(trades["exit_time"], utc=True, errors="coerce")
     trades = trades.dropna(subset=["entry_time", "exit_time"])
 
-    trades = _sort_trades(trades, args.sort_by).head(int(args.top_n))
+    if args.trade_id:
+        want = set(int(x) for x in args.trade_id)
+        trades = trades[trades["trade_id"].astype(int).isin(want)].copy()
+        trades = trades.sort_values("trade_id")
+    else:
+        trades = _sort_trades(trades, args.sort_by).head(int(args.top_n))
     if trades.empty:
         print("[viz] no valid trades after filtering.", flush=True)
         return 0
@@ -645,8 +669,21 @@ def main() -> int:
     for _, t in trades.iterrows():
         t_id = int(t["trade_id"])
         entry_ts = pd.to_datetime(t["entry_time"], utc=True)
-        s = entry_ts - window
-        e = entry_ts + window
+        exit_ts = pd.to_datetime(t["exit_time"], utc=True)
+
+        def _window_for(anchor: str):
+            if anchor == "span":
+                return entry_ts - window, exit_ts + window, "span"
+            if anchor == "exit":
+                return exit_ts - window, exit_ts + window, "exit"
+            return entry_ts - window, entry_ts + window, "entry"
+
+        if args.window_anchor == "auto":
+            s, e, anchored = _window_for("entry")
+            if exit_ts < s or exit_ts > e:
+                s, e, anchored = _window_for("exit")
+        else:
+            s, e, anchored = _window_for(args.window_anchor)
 
         # Cache by month to avoid re-loading the same parquet multiple times.
         months = _iter_month_starts_utc(s.to_pydatetime(), e.to_pydatetime())
@@ -669,7 +706,11 @@ def main() -> int:
         sub = m1[(m1.index >= s) & (m1.index <= e)]
 
         out_html = charts_dir / f"trade_{t_id}.html"
-        engine = _render_trade_html(m1=sub, trade=t.to_dict(), out_html=out_html)
+        trade_dict = t.to_dict()
+        trade_dict["__viz_window_anchor__"] = anchored
+        trade_dict["__viz_window_start__"] = str(s)
+        trade_dict["__viz_window_end__"] = str(e)
+        engine = _render_trade_html(m1=sub, trade=trade_dict, out_html=out_html)
         engines[engine] = engines.get(engine, 0) + 1
 
         index_rows.append(
@@ -681,6 +722,7 @@ def main() -> int:
                 "exit_time": str(t["exit_time"]),
                 "file": out_html.name,
                 "engine": engine,
+                "window_anchor": anchored,
             }
         )
 
@@ -690,7 +732,7 @@ def main() -> int:
         [
             f"<tr><td>{r['trade_id']}</td><td>{r['side']}</td><td>{r['pnl_pips']:.2f}</td>"
             f"<td>{r['entry_time']}</td><td>{r['exit_time']}</td>"
-            f"<td>{r['engine']}</td><td><a href=\"{r['file']}\">{r['file']}</a></td></tr>"
+            f"<td>{r['engine']}</td><td>{r['window_anchor']}</td><td><a href=\"{r['file']}\">{r['file']}</a></td></tr>"
             for r in index_rows_sorted
         ]
     )
@@ -716,7 +758,7 @@ def main() -> int:
   <table>
     <thead>
       <tr>
-        <th>trade_id</th><th>side</th><th>pnl_pips</th><th>entry_time</th><th>exit_time</th><th>engine</th><th>file</th>
+        <th>trade_id</th><th>side</th><th>pnl_pips</th><th>entry_time</th><th>exit_time</th><th>engine</th><th>window_anchor</th><th>file</th>
       </tr>
     </thead>
     <tbody>
