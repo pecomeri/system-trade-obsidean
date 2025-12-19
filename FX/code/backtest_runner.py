@@ -37,6 +37,8 @@ class HypConfig:
     bias_mode: str = "default"          # "default" | "m1_candle"
     max_losing_streak: int | None = None
     regime_mode: str | None = None      # e.g. "m1_compression"
+    dump_trades: bool = False
+    momentum_mode: str | None = None    # e.g. "D004_continuation"
 
 
 def _run_core(cmd: list[str]) -> Path:
@@ -146,6 +148,30 @@ def _run_core_inprocess(cfg: HypConfig, *, from_month: str, to_month: str, run_t
             burst = (body > mean_prev)
             burst_up = (m1["close"] > m1["open"]) & burst
             burst_dn = (m1["close"] < m1["open"]) & burst
+
+            if cfg.momentum_mode == "D004_continuation":
+                # D004 contract (structure constraints; price-only; fixed threshold):
+                #   1) Buy: close > prev_high, Sell: close < prev_low (prev is shift(1) of confirmed M1 high/low)
+                #   2) Reject wick-dominant candles: range>0 and body_ratio>=0.5 (0.5 is fixed; no tuning)
+                # Notes (alignment / no-lookahead):
+                #   - conditions are evaluated on confirmed M1 bars, then shift(1) is applied below
+                #     so that only last-closed M1 can trigger a 10s execution.
+                h = df10["high_bid"].resample("1min", label="right", closed="right").max()
+                l = df10["low_bid"].resample("1min", label="right", closed="right").min()
+                hl = pd.DataFrame({"high": h, "low": l}).reindex(m1.index)
+
+                prev_high = hl["high"].shift(1)
+                prev_low = hl["low"].shift(1)
+
+                rng = (hl["high"] - hl["low"])
+                body_ratio = body / rng
+                cond_body_ratio = (rng > 0) & (body_ratio >= 0.5)
+
+                cond_break_prev_buy = (m1["close"] > prev_high)
+                cond_break_prev_sell = (m1["close"] < prev_low)
+
+                burst_up = burst_up & cond_break_prev_buy & cond_body_ratio
+                burst_dn = burst_dn & cond_break_prev_sell & cond_body_ratio
 
             # use last closed M1 only (no lookahead)
             burst_up_closed = burst_up.shift(1).fillna(False)
@@ -277,6 +303,69 @@ def _copy_artifacts(src_run_dir: Path, dst_dir: Path, *, keep_config_as: str = "
         shutil.copy2(src, dst_dir / dst_name)
 
 
+def _write_trades_csv(src_trades_csv: Path, dst_trades_csv: Path) -> None:
+    """
+    Visualization-only trade log.
+    Does NOT change trade generation/exit logic; just formats columns.
+    """
+    import pandas as pd
+
+    if not src_trades_csv.exists():
+        raise FileNotFoundError(str(src_trades_csv))
+
+    df = pd.read_csv(src_trades_csv)
+    if df.empty:
+        out = pd.DataFrame(
+            columns=[
+                "trade_id",
+                "side",
+                "entry_time",
+                "entry_price",
+                "exit_time",
+                "exit_price",
+                "pnl_pips",
+                "holding_secs",
+                "reason_exit",
+            ]
+        )
+        out.to_csv(dst_trades_csv, index=False)
+        return
+
+    df = df.copy()
+    df.insert(0, "trade_id", range(1, len(df) + 1))
+    if "exit_reason" in df.columns and "reason_exit" not in df.columns:
+        df = df.rename(columns={"exit_reason": "reason_exit"})
+
+    holding_secs = None
+    if "entry_time" in df.columns and "exit_time" in df.columns:
+        et = pd.to_datetime(df["entry_time"], utc=True, errors="coerce")
+        xt = pd.to_datetime(df["exit_time"], utc=True, errors="coerce")
+        holding_secs = (xt - et).dt.total_seconds()
+
+    cols = [
+        "trade_id",
+        "side",
+        "entry_time",
+        "entry_price",
+        "exit_time",
+        "exit_price",
+        "pnl_pips",
+        "reason_exit",
+    ]
+    for c in cols:
+        if c not in df.columns:
+            df[c] = None
+
+    out = df[cols].copy()
+    if holding_secs is not None:
+        out.insert(out.columns.get_loc("pnl_pips") + 1, "holding_secs", holding_secs)
+    else:
+        out.insert(out.columns.get_loc("pnl_pips") + 1, "holding_secs", None)
+
+    dst_trades_csv.parent.mkdir(parents=True, exist_ok=True)
+    out.to_csv(dst_trades_csv, index=False)
+
+
 def _sum_pnl_pips(monthly_csv: Path) -> float:
     import csv
 
@@ -303,16 +392,22 @@ def _run_variant_inprocess(cfg: HypConfig, *, run_tag: str) -> dict:
     verify_run_dir = _run_core_inprocess(cfg, from_month=cfg.verify_from_month, to_month=cfg.verify_to_month, run_tag=run_tag)
     verify_out = out_root / "in_sample_2024"
     _copy_artifacts(verify_run_dir, verify_out, keep_config_as="core_config.json")
+    if cfg.dump_trades:
+        _write_trades_csv(verify_run_dir / "trades.csv", verify_out / "trades.csv")
 
     # 2025 forward
     forward_run_dir = _run_core_inprocess(cfg, from_month=cfg.forward_from_month, to_month=cfg.forward_to_month, run_tag=run_tag)
     forward_out = out_root / "forward_2025"
     _copy_artifacts(forward_run_dir, forward_out, keep_config_as="core_config.json")
+    if cfg.dump_trades:
+        _write_trades_csv(forward_run_dir / "trades.csv", forward_out / "trades.csv")
 
     # Required outputs at hyp root: forward artifacts + runner config.json
     _copy_artifacts(forward_run_dir, out_root, keep_config_as="core_config.json")
     shutil.copy2(forward_out / "monthly.csv", out_root / "monthly.csv")
     shutil.copy2(forward_out / "monthly_by_session.csv", out_root / "monthly_by_session.csv")
+    if cfg.dump_trades:
+        _write_trades_csv(forward_run_dir / "trades.csv", out_root / "trades.csv")
 
     meta = {
         "family": cfg.family,
@@ -341,6 +436,8 @@ def _run_variant_inprocess(cfg: HypConfig, *, run_tag: str) -> dict:
             "disable_m1_bias_filter": cfg.disable_m1_bias_filter,
             "entry_mode": cfg.entry_mode,
             "regime_mode": cfg.regime_mode,
+            "dump_trades": cfg.dump_trades,
+            "momentum_mode": cfg.momentum_mode,
         },
     }
     (out_root / "config.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -516,7 +613,7 @@ def parse_args() -> argparse.Namespace:
             "B001", "B002", "B003", "B004", "B005", "B006", "B007", "B008",
             "C001", "C002", "C003", "C004", "C005",
             "C101", "C102", "C103",
-            "D001", "D002",
+            "D001", "D002", "D003", "D004",
         ],
     )
     p.add_argument("--symbol", default="USDJPY")
@@ -669,9 +766,11 @@ def main() -> int:
                 ],
             )
             w.writeheader()
-            for hyp, regime_mode in [
-                ("D001", None),
-                ("D002", "m1_compression"),
+            for hyp, regime_mode, use_h1 in [
+                ("D001", None, None),
+                ("D002", "m1_compression", None),
+                ("D003", None, False),
+                ("D004", None, None),
             ]:
                 cfg = HypConfig(
                     family=family,
@@ -684,9 +783,12 @@ def main() -> int:
                     forward_from_month=str(args.forward_from_month),
                     forward_to_month=str(args.forward_to_month),
                     spread_pips=float(args.spread_pips),
+                    use_h1_trend_filter=use_h1,
                     entry_mode="D_m1_momentum",
                     disable_m1_bias_filter=True,
                     regime_mode=regime_mode,
+                    dump_trades=True,
+                    momentum_mode=("D004_continuation" if hyp == "D004" else None),
                 )
                 meta = _run_variant_inprocess(cfg, run_tag=hyp.lower())
 
@@ -973,7 +1075,7 @@ def main() -> int:
         print("[runner] done. summary:", json.dumps(meta, ensure_ascii=False), flush=True)
         return 0
 
-    if args.hyp in ("D001", "D002"):
+    if args.hyp in ("D001", "D002", "D003", "D004"):
         cfg = HypConfig(
             family="family_D_momentum",
             hyp=str(args.hyp),
@@ -985,9 +1087,12 @@ def main() -> int:
             forward_from_month=str(args.forward_from_month),
             forward_to_month=str(args.forward_to_month),
             spread_pips=float(args.spread_pips),
+            use_h1_trend_filter=(False if args.hyp == "D003" else None),
             entry_mode="D_m1_momentum",
             disable_m1_bias_filter=True,
             regime_mode=("m1_compression" if args.hyp == "D002" else None),
+            dump_trades=True,
+            momentum_mode=("D004_continuation" if args.hyp == "D004" else None),
         )
         meta = _run_variant_inprocess(cfg, run_tag=str(args.hyp).lower())
         print("[runner] done. summary:", json.dumps(meta, ensure_ascii=False), flush=True)
