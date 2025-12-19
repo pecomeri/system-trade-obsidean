@@ -123,6 +123,22 @@ def _pivot_n_entries(long_df):
     return piv
 
 
+def _read_hyp_config(hyp_dir: Path) -> dict:
+    """
+    Best-effort read of `{hyp_dir}/config.json` produced by backtest_runner.
+    Used only to make the summary.md factual (what filters were on/off).
+    """
+    import json
+
+    p = hyp_dir / "config.json"
+    if not p.exists():
+        return {}
+    try:
+        return json.loads(p.read_text(encoding="utf-8"))
+    except Exception:  # noqa: BLE001
+        return {}
+
+
 def _write_md(out_dir: Path, *, hyp_dir: Path, rows, piv, meta: dict):
     import pandas as pd
 
@@ -131,11 +147,27 @@ def _write_md(out_dir: Path, *, hyp_dir: Path, rows, piv, meta: dict):
     lines.append("")
     lines.append("## 前提")
     lines.append(f"- hyp_dir: `{hyp_dir}`")
-    lines.append(f"- 集計時刻: `{meta['used_signal_eval']}`")
-    if meta.get("used_signal_eval") == "entry_time_minus_10s":
-        lines.append("  - `signal_eval_ts ~= entry_time - 10秒`（coreの entry_on_next_open=ts_next に基づく近似）")
+    lines.append("- 集計時刻（periodごと）:")
+    for period, info in meta["inputs"].items():
+        used = info.get("used_signal_eval", "unknown")
+        lines.append(f"  - {period}: `{used}`")
+        if used == "entry_time_minus_10s":
+            lines.append("    - `signal_eval_ts ~= entry_time - 10秒`（coreの entry_on_next_open=ts_next に基づく近似）")
     lines.append("- timezone: UTC（timestampは tz-aware として処理）")
     lines.append("")
+    cfg = meta.get("config", {})
+    diff = cfg.get("diff", {}) if isinstance(cfg, dict) else {}
+    if isinstance(diff, dict) and diff:
+        only_session = diff.get("only_session", "(unknown)")
+        use_time_filter = diff.get("use_time_filter", "(unknown)")
+        use_h1 = diff.get("use_h1_trend_filter", "(unknown)")
+        no_weekend = diff.get("no_weekend_entry", "(unknown)")
+        lines.append("## 設定メモ（runner config.json の diff）")
+        lines.append(f"- only_session={only_session}")
+        lines.append(f"- use_time_filter={use_time_filter}")
+        lines.append(f"- use_h1_trend_filter={use_h1}")
+        lines.append(f"- no_weekend_entry={no_weekend}")
+        lines.append("")
     lines.append("## 入力ファイル")
     for period, info in meta["inputs"].items():
         lines.append(f"- {period}: `{info['source_csv']}`（kind={info['source_kind']}）")
@@ -161,9 +193,22 @@ def _write_md(out_dir: Path, *, hyp_dir: Path, rows, piv, meta: dict):
             )
     lines.append("")
 
-    # Simple note about weekend blocks intersection
-    lines.append("## メモ（weekend禁止帯との交差チェック）")
-    lines.append("- 金曜>=20:00 / 月曜<02:00 の禁止帯は `W1_only (08:00–11:00 UTC)` と基本的に交差しない想定。")
+    # Worst avg_pnl (fact only; fixed rule: consider only cells with n_entries >= median)
+    lines.append("## Top10（avg_pnl_pips が悪い順 / n_entries >= median(n_entries) のセルのみ）")
+    for period, grp in rows.groupby("period"):
+        if grp.empty:
+            continue
+        med = float(grp["n_entries"].median())
+        g2 = grp[grp["n_entries"] >= med].copy()
+        g2 = g2.sort_values(["avg_pnl_pips", "n_entries"], ascending=[True, False]).head(10)
+        lines.append(f"### {period} (median_n_entries={med:.1f})")
+        for _, r in g2.iterrows():
+            lines.append(
+                f"- {r['dow']} h{int(r['hour_utc']):02d}: n={int(r['n_entries'])} sum_pnl_pips={float(r['sum_pnl_pips']):.1f} avg_pnl_pips={float(r['avg_pnl_pips']):.2f}"
+            )
+    lines.append("")
+
+    lines.append("## 参考（Fri>=20:00 / Mon<02:00 のエントリー数）")
     for period, counts in meta.get("forbidden_counts", {}).items():
         lines.append(f"- {period}: forbidden_window_entries={counts}")
     lines.append("")
@@ -206,6 +251,7 @@ def main() -> int:
         inputs_meta[period] = {
             "source_csv": str(inputs2.source_csv),
             "source_kind": inputs2.source_kind,
+            "used_signal_eval": inputs2.used_signal_eval,
         }
 
         # forbidden window count (ts basis)
@@ -236,10 +282,11 @@ def main() -> int:
     (out_dir / "entry_by_dow_hour.csv").write_text(rows.to_csv(index=False), encoding="utf-8")
     (out_dir / "entry_by_dow_hour_pivot.csv").write_text(piv.to_csv(index=False), encoding="utf-8")
 
+    cfg = _read_hyp_config(hyp_dir)
     meta = {
-        "used_signal_eval": "signal_eval_ts" if any(i["source_kind"] == "diag_trades" for i in inputs_meta.values()) else "entry_time_minus_10s",
         "inputs": inputs_meta,
         "forbidden_counts": forbidden_counts,
+        "config": cfg,
     }
     _write_md(out_dir, hyp_dir=hyp_dir, rows=rows, piv=piv, meta=meta)
 
@@ -251,4 +298,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

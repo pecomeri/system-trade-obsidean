@@ -12,8 +12,8 @@ regimes:
   - none
 timeframe_signal: M1
 timeframe_exec: 10s
-status: draft
-result: unknown
+status: stop
+result: dead
 tags:
   - fx
   - family_D_momentum

@@ -2,22 +2,16 @@
 id: D006
 family: family_D_momentum
 type: observation_variant
-
 strategy: "[[D004_m1_momentum_burst_break_prev]]"
 base_strategy: "[[D004_m1_momentum_burst_break_prev]]"
-
 filters:
   - "[[h1_trend_up]]"
-
 regimes:
   - none
-
 timeframe_signal: M1
 timeframe_exec: 10s
-
-status: draft
-result: observing
-
+status: stopped
+result: no_clear_time_effect
 tags:
   - fx
   - family_D_momentum
@@ -121,6 +115,40 @@ D006では、以下の集計を必ず生成する。
 ---
 
 ## メモ（後で記入）
-- 悪化が目立つ曜日 × 時間帯：
-- 改善が見られる曜日 × 時間帯：
-- 次に切るフィルター案：
+- 検証結果（集計）：
+  - 2024 verify: sum_pnl_pips=-426.0 / trades=1092
+  - 2025 forward: sum_pnl_pips=-894.0 / trades=844
+- 悪化が目立つ曜日 × 時間帯（verify/forward 両方で n_entries が各period中央値以上、かつ両方 avg_pnl_pips<0 のセルから選定）：
+  - Tue h02: verify n=10 avg=-3.40 sum=-34.0 / forward n=7 avg=-6.86 sum=-48.0
+  - Thu h07: verify n=5 avg=-1.20 sum=-6.0 / forward n=11 avg=-4.00 sum=-44.0
+- 改善が見られる曜日 × 時間帯（verify/forward 両方で n_entries が各period中央値以上、かつ両方 avg_pnl_pips>0 のセルから選定）：
+  - Thu h06: verify n=7 avg=5.71 sum=40.0 / forward n=7 avg=5.71 sum=40.0
+  - Mon h08: verify n=6 avg=4.67 sum=28.0 / forward n=5 avg=3.20 sum=16.0
+- 次に切るフィルター案（候補名のみ）：
+  - D006a_avoid_Tue_h02
+  - D006b_avoid_Thu_h07
+- 自己チェック：
+  - D004の monthly.csv は sha256 一致（`dc0947...` / `bfab27...`）
+
+
+
+## 観測結果まとめ（結論）
+
+- 曜日 × 時間帯（UTC）でのエントリー分布を確認したが、
+  verify / forward の両方で一貫して「明確に悪い」時間帯の塊は確認できなかった。
+- エントリー回数は 0時付近に偏る傾向が見られたが、
+  平均損益の悪化とは直結していない。
+- 勝っている時間帯は散発的で、時間帯単体をフィルターとして
+  切り出す十分な根拠は現時点では弱い。
+
+### 判断
+- 時間帯（hour / session）を主軸としたフィルター検証は一旦ここで停止する。
+- D004 は「特定の時間帯で勝つ戦略」ではなく、
+  時間帯を問わず局所的な構造（momentum burst）に依存する戦略である可能性が高い。
+
+### 次の検証候補（時間帯以外）
+- エントリー後の **保有時間（holding time）**
+- 初動が出たか／出なかったかの二値分類
+- 初動不成立時の失敗パターンの共通点
+
+https://docs.google.com/spreadsheets/d/19xuNQ1T3vR7PzC8fgerH7nKiQIpY7LHcS7p1o8TfnQM/edit?gid=0#gid=0

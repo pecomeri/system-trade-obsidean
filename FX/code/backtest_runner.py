@@ -638,7 +638,7 @@ def parse_args() -> argparse.Namespace:
             "B001", "B002", "B003", "B004", "B005", "B006", "B007", "B008",
             "C001", "C002", "C003", "C004", "C005",
             "C101", "C102", "C103",
-            "D001", "D002", "D003", "D004", "D005",
+            "D001", "D002", "D003", "D004", "D005", "D006",
         ],
     )
     p.add_argument("--symbol", default="USDJPY")
@@ -797,24 +797,27 @@ def main() -> int:
                 ("D003", None, False, False),
                 ("D004", None, None, False),
                 ("D005", None, None, True),
+                # D006: observation (24h) = no session/time filter, H1 ON
+                ("D006", None, True, False),
             ]:
                 cfg = HypConfig(
                     family=family,
                     hyp=hyp,
                     symbol=str(args.symbol).upper(),
                     root=str(root),
-                    only_session="W1",
+                    only_session=(None if hyp == "D006" else "W1"),
                     verify_from_month=str(args.verify_from_month),
                     verify_to_month=str(args.verify_to_month),
                     forward_from_month=str(args.forward_from_month),
                     forward_to_month=str(args.forward_to_month),
                     spread_pips=float(args.spread_pips),
                     use_h1_trend_filter=use_h1,
+                    use_time_filter=(False if hyp == "D006" else None),
                     entry_mode="D_m1_momentum",
                     disable_m1_bias_filter=True,
                     regime_mode=regime_mode,
                     dump_trades=True,
-                    momentum_mode=("D004_continuation" if hyp in ("D004", "D005") else None),
+                    momentum_mode=("D004_continuation" if hyp in ("D004", "D005", "D006") else None),
                     no_weekend_entry=no_weekend,
                 )
                 meta = _run_variant_inprocess(cfg, run_tag=hyp.lower())
@@ -1102,24 +1105,25 @@ def main() -> int:
         print("[runner] done. summary:", json.dumps(meta, ensure_ascii=False), flush=True)
         return 0
 
-    if args.hyp in ("D001", "D002", "D003", "D004", "D005"):
+    if args.hyp in ("D001", "D002", "D003", "D004", "D005", "D006"):
         cfg = HypConfig(
             family="family_D_momentum",
             hyp=str(args.hyp),
             symbol=str(args.symbol).upper(),
             root=str(root),
-            only_session="W1",
+            only_session=(None if args.hyp == "D006" else "W1"),
             verify_from_month=str(args.verify_from_month),
             verify_to_month=str(args.verify_to_month),
             forward_from_month=str(args.forward_from_month),
             forward_to_month=str(args.forward_to_month),
             spread_pips=float(args.spread_pips),
-            use_h1_trend_filter=(False if args.hyp == "D003" else None),
+            use_h1_trend_filter=(False if args.hyp == "D003" else (True if args.hyp == "D006" else None)),
+            use_time_filter=(False if args.hyp == "D006" else None),
             entry_mode="D_m1_momentum",
             disable_m1_bias_filter=True,
             regime_mode=("m1_compression" if args.hyp == "D002" else None),
             dump_trades=True,
-            momentum_mode=("D004_continuation" if args.hyp in ("D004", "D005") else None),
+            momentum_mode=("D004_continuation" if args.hyp in ("D004", "D005", "D006") else None),
             no_weekend_entry=(args.hyp == "D005"),
         )
         meta = _run_variant_inprocess(cfg, run_tag=str(args.hyp).lower())
