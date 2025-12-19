@@ -226,12 +226,14 @@ def _render_svg_overview(*, out_html: Path, tf: str, ohlc, trades_df, start_utc,
         ei = nearest_idx(r["entry_time"])
         xe = x_at(ei)
         ye = y_at(float(r["entry_price"]))
-        markers.append(f"<circle cx='{xe:.2f}' cy='{ye:.2f}' r='3.5' fill='green'><title>{title}</title></circle>")
+        markers.append(f"<circle cx='{xe:.2f}' cy='{ye:.2f}' r='5' fill='green' stroke='white' stroke-width='1'><title>{title}</title></circle>")
+        markers.append(f"<text x='{(xe + 7):.2f}' y='{(ye - 7):.2f}' font-size='11' font-family='sans-serif' fill='green'>{tid}</text>")
 
         xi = nearest_idx(r["exit_time"])
         xx = x_at(xi)
         yx = y_at(float(r["exit_price"]))
-        markers.append(f"<rect x='{(xx-3):.2f}' y='{(yx-3):.2f}' width='6' height='6' fill='red'><title>{title}</title></rect>")
+        markers.append(f"<rect x='{(xx-4):.2f}' y='{(yx-4):.2f}' width='8' height='8' fill='red' stroke='white' stroke-width='1'><title>{title}</title></rect>")
+        markers.append(f"<text x='{(xx + 7):.2f}' y='{(yx + 14):.2f}' font-size='11' font-family='sans-serif' fill='red'>{tid}</text>")
 
     x0 = str(x.min())
     x1 = str(x.max())
@@ -350,26 +352,48 @@ def render_overview(*, out_html: Path, tf: str, ohlc, trades_df, start_utc, end_
     custom = t[["trade_id", "side", "pnl_pips"]].copy()
     custom["reason"] = t.get("reason_exit", t.get("exit_reason", "")).fillna("")
 
+    show_labels = bool(getattr(trades_df, "_viz_show_labels", True))
+    marker_size = int(getattr(trades_df, "_viz_marker_size", 12))
+
+    entry_kwargs = {}
+    exit_kwargs = {}
+    if show_labels:
+        entry_kwargs = {
+            "mode": "markers+text",
+            "text": t["trade_id"].astype(str),
+            "textposition": "top center",
+            "textfont": dict(color="green", size=10),
+        }
+        exit_kwargs = {
+            "mode": "markers+text",
+            "text": t["trade_id"].astype(str),
+            "textposition": "bottom center",
+            "textfont": dict(color="red", size=10),
+        }
+    else:
+        entry_kwargs = {"mode": "markers"}
+        exit_kwargs = {"mode": "markers"}
+
     fig.add_trace(
         go.Scatter(
             x=t["entry_time"],
             y=t["entry_price"],
-            mode="markers",
-            marker=dict(color="green", size=7, symbol="triangle-up"),
+            marker=dict(color="green", size=marker_size, symbol="triangle-up", line=dict(width=1, color="white")),
             name="entry",
             customdata=custom.to_numpy(),
             hovertemplate=hover,
+            **entry_kwargs,
         )
     )
     fig.add_trace(
         go.Scatter(
             x=t["exit_time"],
             y=t["exit_price"],
-            mode="markers",
-            marker=dict(color="red", size=7, symbol="x"),
+            marker=dict(color="red", size=marker_size, symbol="x", line=dict(width=1, color="white")),
             name="exit",
             customdata=custom.to_numpy(),
             hovertemplate=hover,
+            **exit_kwargs,
         )
     )
 
@@ -409,6 +433,8 @@ def main() -> int:
     p.add_argument("--to", dest="to_date", required=True, help="YYYY-MM-DD (UTC)")
     p.add_argument("--max_days", type=int, default=8, help="Safety limit for date span (inclusive); set --force to override")
     p.add_argument("--force", action="store_true", help="Allow longer ranges than --max_days")
+    p.add_argument("--marker_size", type=int, default=12, help="Marker size for entry/exit points (visual only)")
+    p.add_argument("--no_labels", action="store_true", help="Hide trade_id text labels (visual only)")
     args = p.parse_args()
 
     import pandas as pd
@@ -423,6 +449,10 @@ def main() -> int:
     if trades.empty:
         print("[overview] trades.csv empty", flush=True)
         return 0
+
+    # Pass visualization preferences without expanding the function signature too much.
+    trades._viz_show_labels = (not args.no_labels)  # type: ignore[attr-defined]
+    trades._viz_marker_size = int(args.marker_size)  # type: ignore[attr-defined]
 
     start = _parse_date_utc(args.from_date)
     end_inclusive = _parse_date_utc(args.to_date)
