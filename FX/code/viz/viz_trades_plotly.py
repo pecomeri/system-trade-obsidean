@@ -228,6 +228,42 @@ def _render_trade_plotly(*, m1, trade, out_html: Path) -> None:
     fig.add_vline(x=exit_ts, line_color="red", line_width=2)
     fig.add_trace(go.Scatter(x=[entry_ts], y=[entry_px], mode="markers", marker=dict(color="green", size=10), name="entry"))
     fig.add_trace(go.Scatter(x=[exit_ts], y=[exit_px], mode="markers", marker=dict(color="red", size=10), name="exit"))
+    # make exit/entry level visible (not only vertical timing)
+    fig.add_hline(y=entry_px, line_color="green", line_width=1, opacity=0.6)
+    fig.add_hline(y=exit_px, line_color="red", line_width=1, opacity=0.6)
+
+    # annotate markers (price + reason) so exit point is obvious
+    reason = str(trade.get("reason_exit") or trade.get("exit_reason") or "")
+    fig.add_annotation(
+        x=entry_ts,
+        y=entry_px,
+        text=f"entry {entry_px:.3f}",
+        showarrow=True,
+        arrowhead=2,
+        ax=20,
+        ay=-30,
+        font=dict(color="green"),
+    )
+    fig.add_annotation(
+        x=exit_ts,
+        y=exit_px,
+        text=f"exit {exit_px:.3f} {reason}".strip(),
+        showarrow=True,
+        arrowhead=2,
+        ax=20,
+        ay=30,
+        font=dict(color="red"),
+    )
+
+    # highlight the M1 candle that contains the exit_time (visual anchor)
+    if len(m1.index) > 0:
+        exit_m1 = exit_ts.floor("min")
+        fig.add_vrect(
+            x0=exit_m1,
+            x1=exit_m1 + pd.Timedelta(minutes=1),
+            fillcolor="rgba(255,0,0,0.08)",
+            line_width=0,
+        )
 
     fig.update_layout(
         title=f"trade_id={t_id} side={side} pnl_pips={pnl}",
@@ -236,9 +272,21 @@ def _render_trade_plotly(*, m1, trade, out_html: Path) -> None:
         xaxis_rangeslider_visible=False,
         template="plotly_white",
         height=600,
+        dragmode="pan",
+        xaxis=dict(fixedrange=False),
+        yaxis=dict(fixedrange=False),
     )
     out_html.parent.mkdir(parents=True, exist_ok=True)
-    fig.write_html(str(out_html), include_plotlyjs="cdn", full_html=True)
+    fig.write_html(
+        str(out_html),
+        include_plotlyjs="cdn",
+        full_html=True,
+        config={
+            "scrollZoom": True,
+            "displaylogo": False,
+            "responsive": True,
+        },
+    )
 
 
 def _render_trade_matplotlib_html(*, m1, trade, out_html: Path) -> None:
@@ -405,8 +453,13 @@ def _render_trade_svg_html(*, m1, trade, out_html: Path) -> None:
     overlays = [
         f"<line x1='{x_entry:.2f}' y1='{pad_t:.2f}' x2='{x_entry:.2f}' y2='{(pad_t + plot_h):.2f}' stroke='green' stroke-width='2' />",
         f"<line x1='{x_exit:.2f}' y1='{pad_t:.2f}' x2='{x_exit:.2f}' y2='{(pad_t + plot_h):.2f}' stroke='red' stroke-width='2' />",
+        # horizontal price lines (so exit level is visible)
+        f"<line x1='{pad_l:.2f}' y1='{y_entry:.2f}' x2='{(pad_l + plot_w):.2f}' y2='{y_entry:.2f}' stroke='green' stroke-width='1' stroke-opacity='0.5' />",
+        f"<line x1='{pad_l:.2f}' y1='{y_exit:.2f}' x2='{(pad_l + plot_w):.2f}' y2='{y_exit:.2f}' stroke='red' stroke-width='1' stroke-opacity='0.5' />",
         f"<circle cx='{x_entry:.2f}' cy='{y_entry:.2f}' r='4' fill='green' />",
         f"<circle cx='{x_exit:.2f}' cy='{y_exit:.2f}' r='4' fill='red' />",
+        f"<text x='{(x_entry + 6):.2f}' y='{(y_entry - 6):.2f}' font-size='11' font-family='sans-serif' fill='green'>entry {entry_px:.3f}</text>",
+        f"<text x='{(x_exit + 6):.2f}' y='{(y_exit + 14):.2f}' font-size='11' font-family='sans-serif' fill='red'>exit {exit_px:.3f}</text>",
     ]
 
     title = f"trade_id={t_id} side={side} pnl_pips={pnl}"

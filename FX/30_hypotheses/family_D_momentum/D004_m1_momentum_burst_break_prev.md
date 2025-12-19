@@ -136,6 +136,8 @@ M1確定足での burst 判定（D001の `body > mean_prev(body)`）は維持し
 ## チャート（目視リンク）
 出力先：`FX/results/family_D_momentum/D004/charts/`
 
+- 全体俯瞰（期間×時間足を選べる / ズーム可）:
+  - `FX/results/family_D_momentum/D004/charts/overview_1min_2025-06-16_2025-06-22.html`
 - 一覧: `FX/results/family_D_momentum/D004/charts/index.html`
 - loss側（pnl_pips_ascでtop10生成）：
   - `FX/results/family_D_momentum/D004/charts/trade_161.html`
@@ -152,4 +154,3 @@ M1確定足での burst 判定（D001の `body > mean_prev(body)`）は維持し
 ## 再現手順
 - backtest: `uv run python FX/code/backtest_runner.py --hyp D004 --root FX/code/dukas_out_v2`
 - charts: `uv run python FX/code/viz/viz_trades_plotly.py --results_dir FX/results/family_D_momentum/D004 --symbol USDJPY --window_minutes 30 --top_n 10 --sort_by pnl_pips_asc`
-
