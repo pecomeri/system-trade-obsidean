@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "FX/30_hypotheses/family_D_momentum/D005_no_weekend_entry.md",
+                "file": "FX/30_hypotheses/family_D_momentum/D008_observe_early_vs_survivor_features.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "D005_no_weekend_entry"
+              "title": "D008_observe_early_vs_survivor_features"
             }
           }
         ]
@@ -205,19 +205,25 @@
   },
   "active": "90af20c70870ac66",
   "lastOpenFiles": [
+    "FX/results/family_D_momentum/D007/スクリーンショット 2025-12-19 17.13.09.png",
+    "FX/results/family_D_momentum/D007/スクリーンショット 2025-12-19 17.13.03.png",
+    "FX/results/family_D_momentum/D007",
+    "FX/results/family_D_momentum/名称未設定フォルダ",
+    "FX/30_hypotheses/family_D_momentum/D008_observe_early_vs_survivor_features.md",
     "FX/30_hypotheses/family_D_momentum/D006_observe_24h.md",
-    "FX/30_hypotheses/family_D_momentum/D007_observe_holding_time.md",
     "FX/30_hypotheses/family_D_momentum/D005_no_weekend_entry.md",
+    "FX/30_hypotheses/family_D_momentum/D007_observe_holding_time.md",
+    "スクリーンショット 2025-12-19 17.13.09.png",
+    "スクリーンショット 2025-12-19 17.13.03.png",
+    "FX/results/family_D_momentum/D004/diagnostics/holding_time_summary.md",
+    "FX/results/family_D_momentum/D004/diagnostics/holding_time_by_minute.csv",
+    "FX/results/family_D_momentum/D004/diagnostics/holding_time_bins.csv",
+    "FX/code/postprocess/holding_time_analysis.py",
     "FX/results/d006_2025-01_2025-12_20251219_063005/monthly_by_session.csv",
     "FX/results/d006_2025-01_2025-12_20251219_063005/monthly.csv",
     "FX/results/d006_2025-01_2025-12_20251219_063005/trades.csv",
     "FX/results/d006_2025-01_2025-12_20251219_063005/runlog.jsonl",
     "FX/results/d006_2025-01_2025-12_20251219_063005/config.json",
-    "FX/results/d006_2025-01_2025-12_20251219_063005",
-    "FX/results/d006_2024-01_2024-12_20251219_062953/monthly_by_session.csv",
-    "FX/results/d006_2024-01_2024-12_20251219_062953/monthly.csv",
-    "FX/results/d006_2024-01_2024-12_20251219_062953/trades.csv",
-    "FX/results/d006_2024-01_2024-12_20251219_062953/runlog.jsonl",
     "FX/results/family_D_momentum/D006/diagnostics/entry_by_dow_hour_summary.md",
     "FX/27_filters/no_weekend_entry.md",
     "FX/results/family_D_momentum/D004/diagnostics/entry_by_dow_hour_summary.md",
@@ -237,9 +243,6 @@
     "FX/30_hypotheses/family_D_momentum/D004_m1_momentum_burst_break_prev.md",
     "FX/20_strategies/D004_m1_momentum_burst_break_prev.md",
     "FX/20_strategies/D001_m1_momentum_burst_range_only.md",
-    "FX/20_strategies/momentum_burst.md",
-    "FX/30_hypotheses/family_D_momentum/D002.md",
-    "FX/30_hypotheses/family_D_momentum/D003.md",
-    "FX/30_hypotheses/family_D_momentum/D001.md"
+    "FX/20_strategies/momentum_burst.md"
   ]
 }

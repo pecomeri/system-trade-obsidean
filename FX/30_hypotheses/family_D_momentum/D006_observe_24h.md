@@ -10,7 +10,7 @@ regimes:
   - none
 timeframe_signal: M1
 timeframe_exec: 10s
-status: stopped
+status: observed
 result: no_clear_time_effect
 tags:
   - fx
