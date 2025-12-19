@@ -108,3 +108,26 @@ tags:
 - early_loss と survivor の差が大きい特徴量：
 - verify/forwardで一貫する差：
 - 次に切る仮説（最大2つ）：
+
+### D008観測メモ（事実：D004結果から集計）
+- 生成物（D004）:
+  - `FX/results/family_D_momentum/D004/diagnostics/early_vs_survivor_features.csv`
+  - `FX/results/family_D_momentum/D004/diagnostics/early_vs_survivor_summary.md`
+- グループ件数:
+  - 2024 verify: early_loss=31 survivor=269
+  - 2025 forward: early_loss=13 survivor=231
+- early_loss と survivor の差が大きい特徴量（delta_median = median_survivor - median_early、上位から）:
+  - break_margin_pips:
+    - 2024 verify: delta_median=-1.20（median_early=2.70 / median_survivor=1.50）
+    - 2025 forward: delta_median=-2.00（median_early=3.60 / median_survivor=1.60）
+  - body:
+    - 2024 verify: delta_median=-0.0360（median_early=0.0590 / median_survivor=0.0230）
+    - 2025 forward: delta_median=-0.0300（median_early=0.0540 / median_survivor=0.0240）
+  - mean_prev_body:
+    - 2024 verify: delta_median=-0.0175（median_early=0.0282 / median_survivor=0.0107）
+    - 2025 forward: delta_median=-0.0062（median_early=0.0182 / median_survivor=0.0120）
+- verify/forwardで一貫する差:
+  - break_margin_pips / body / mean_prev_body は、両方で delta_median<0（survivor の中央値が early_loss より小さい）
+- 次に切る仮説（最大2つ、名前だけ）:
+  - D008a_filter_low_break_margin
+  - D008b_filter_low_body
