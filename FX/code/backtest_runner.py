@@ -42,6 +42,11 @@ class HypConfig:
     no_weekend_entry: bool = False      # D005: block new entries near week transition
     allow_buy: bool | None = None
     allow_sell: bool | None = None
+    exhaustion_filter_enabled: bool = False
+    exhaustion_apply_side: str | None = None   # "buy" or "sell"
+    exhaustion_feature: str | None = None      # "break_margin_over_mean_prev_body" | "break_margin_ratio"
+    exhaustion_threshold: float | None = None
+    exhaustion_nan_policy: str = "pass"        # "pass" (do not exclude NaNs)
 
 
 def _run_core(cmd: list[str]) -> Path:
@@ -179,6 +184,50 @@ def _run_core_inprocess(cfg: HypConfig, *, from_month: str, to_month: str, run_t
 
                 burst_up = burst_up & cond_break_prev_buy & cond_body_ratio
                 burst_dn = burst_dn & cond_break_prev_sell & cond_body_ratio
+
+            if cfg.exhaustion_filter_enabled:
+                if cfg.exhaustion_feature not in ("break_margin_over_mean_prev_body", "break_margin_ratio"):
+                    raise ValueError(f"Unsupported exhaustion_feature: {cfg.exhaustion_feature}")
+                if cfg.exhaustion_threshold is None or not np.isfinite(float(cfg.exhaustion_threshold)):
+                    raise ValueError(f"Invalid exhaustion_threshold: {cfg.exhaustion_threshold}")
+                if cfg.exhaustion_apply_side not in ("buy", "sell"):
+                    raise ValueError(f"Invalid exhaustion_apply_side: {cfg.exhaustion_apply_side}")
+                if cfg.exhaustion_nan_policy != "pass":
+                    raise ValueError(f"Unsupported exhaustion_nan_policy: {cfg.exhaustion_nan_policy}")
+
+                # Compute per-M1 exhaustion feature (price-only; no optimization).
+                # Note: this is evaluated on confirmed M1 bars, before shift(1) below.
+                h = df10["high_bid"].resample("1min", label="right", closed="right").max()
+                l = df10["low_bid"].resample("1min", label="right", closed="right").min()
+                hl = pd.DataFrame({"high": h, "low": l}).reindex(m1.index)
+
+                prev_high = hl["high"].shift(1)
+                prev_low = hl["low"].shift(1)
+                body_f = body.astype(float)
+                mean_prev_f = mean_prev.astype(float)
+
+                break_margin_buy = (m1["close"] - prev_high).astype(float)
+                break_margin_sell = (prev_low - m1["close"]).astype(float)
+
+                if cfg.exhaustion_feature == "break_margin_over_mean_prev_body":
+                    feat_buy = np.where(mean_prev_f > 0, break_margin_buy / mean_prev_f, np.nan)
+                    feat_sell = np.where(mean_prev_f > 0, break_margin_sell / mean_prev_f, np.nan)
+                else:
+                    feat_buy = np.where(body_f > 0, break_margin_buy / body_f, np.nan)
+                    feat_sell = np.where(body_f > 0, break_margin_sell / body_f, np.nan)
+
+                thr = float(cfg.exhaustion_threshold)
+                exc_buy = feat_buy > thr
+                exc_sell = feat_sell > thr
+
+                # nan_policy="pass": NaN => not excluded
+                exc_buy = np.where(np.isnan(feat_buy), False, exc_buy)
+                exc_sell = np.where(np.isnan(feat_sell), False, exc_sell)
+
+                if cfg.exhaustion_apply_side == "buy":
+                    burst_up = burst_up & (~pd.Series(exc_buy, index=m1.index))
+                else:
+                    burst_dn = burst_dn & (~pd.Series(exc_sell, index=m1.index))
 
             # use last closed M1 only (no lookahead)
             burst_up_closed = burst_up.shift(1).fillna(False)
@@ -469,6 +518,13 @@ def _run_variant_inprocess(cfg: HypConfig, *, run_tag: str) -> dict:
             "dump_trades": cfg.dump_trades,
             "momentum_mode": cfg.momentum_mode,
             "no_weekend_entry": cfg.no_weekend_entry,
+            "allow_buy": cfg.allow_buy,
+            "allow_sell": cfg.allow_sell,
+            "exhaustion_filter_enabled": cfg.exhaustion_filter_enabled,
+            "exhaustion_apply_side": cfg.exhaustion_apply_side,
+            "exhaustion_feature": cfg.exhaustion_feature,
+            "exhaustion_threshold": cfg.exhaustion_threshold,
+            "exhaustion_nan_policy": cfg.exhaustion_nan_policy,
         },
     }
     (out_root / "config.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -644,7 +700,7 @@ def parse_args() -> argparse.Namespace:
             "B001", "B002", "B003", "B004", "B005", "B006", "B007", "B008",
             "C001", "C002", "C003", "C004", "C005",
             "C101", "C102", "C103",
-            "D001", "D002", "D003", "D004", "D005", "D006", "D009",
+            "D001", "D002", "D003", "D004", "D005", "D006", "D009", "D011a", "D011b",
         ],
     )
     p.add_argument("--symbol", default="USDJPY")
@@ -1162,6 +1218,319 @@ def main() -> int:
             allow_sell=True,
         )
         meta = _run_variant_inprocess(cfg, run_tag="d009")
+        print("[runner] done. summary:", json.dumps(meta, ensure_ascii=False), flush=True)
+        return 0
+
+    def _read_trades_side_metrics(trades_csv: Path, *, side: str) -> dict:
+        import pandas as pd
+
+        df = pd.read_csv(trades_csv)
+        if df.empty:
+            return {"n_trades": 0, "n_early_loss": 0, "early_loss_rate": 0.0, "n_survivor": 0, "survivor_rate": 0.0, "sum_pnl_pips": 0.0, "avg_pnl_pips": 0.0}
+        if "side" not in df.columns:
+            raise ValueError(f"Missing side column: {trades_csv}")
+        df["side"] = df["side"].astype(str).str.lower()
+        df = df[df["side"] == side].copy()
+        if df.empty:
+            return {"n_trades": 0, "n_early_loss": 0, "early_loss_rate": 0.0, "n_survivor": 0, "survivor_rate": 0.0, "sum_pnl_pips": 0.0, "avg_pnl_pips": 0.0}
+
+        df["entry_time"] = pd.to_datetime(df["entry_time"], utc=True, errors="coerce")
+        df["exit_time"] = pd.to_datetime(df["exit_time"], utc=True, errors="coerce")
+        df = df.dropna(subset=["entry_time", "exit_time"])
+        holding_min = (df["exit_time"] - df["entry_time"]).dt.total_seconds() / 60.0
+        df["holding_time_min"] = holding_min
+        df = df[df["holding_time_min"].notna() & (df["holding_time_min"] >= 0)].copy()
+
+        early = df["holding_time_min"] <= 3.0
+        surv = df["holding_time_min"] >= 20.0
+        n = int(len(df))
+        n_early = int(early.sum())
+        n_surv = int(surv.sum())
+        sum_pnl = float(df["pnl_pips"].astype(float).sum()) if "pnl_pips" in df.columns else 0.0
+        avg_pnl = float(df["pnl_pips"].astype(float).mean()) if ("pnl_pips" in df.columns and n > 0) else 0.0
+        return {
+            "n_trades": n,
+            "n_early_loss": n_early,
+            "early_loss_rate": float(n_early / n) if n > 0 else 0.0,
+            "n_survivor": n_surv,
+            "survivor_rate": float(n_surv / n) if n > 0 else 0.0,
+            "sum_pnl_pips": sum_pnl,
+            "avg_pnl_pips": avg_pnl,
+        }
+
+    def _compute_exhaustion_thresholds_from_d009_verify(*, side: str) -> dict:
+        import numpy as np
+        import pandas as pd
+        import backtest_core as bc
+
+        side = str(side).lower()
+        if side not in ("buy", "sell"):
+            raise ValueError("side must be buy/sell")
+
+        d009 = _results_root() / "family_D_momentum" / "D009" / "in_sample_2024"
+        trades_csv = d009 / "trades.csv"
+        core_cfg_path = d009 / "core_config.json"
+        if not trades_csv.exists() or not core_cfg_path.exists():
+            raise FileNotFoundError(f"D009 verify artifacts not found: {trades_csv} {core_cfg_path}")
+
+        core_cfg = json.loads(core_cfg_path.read_text(encoding="utf-8"))
+        lookback = int(core_cfg.get("lookback_bars", 6))
+
+        cfg_local = bc.Config(
+            root=Path(core_cfg["root"]),
+            symbol=str(core_cfg["symbol"]).upper(),
+            from_month=str(core_cfg["from_month"]),
+            to_month=str(core_cfg["to_month"]),
+            run_tag="postprocess_thresholds",
+            only_session=None,
+            spread_pips=float(core_cfg.get("spread_pips", 1.0)),
+            pip_size=float(core_cfg["pip_size"]),
+        )
+
+        df_bid = bc.load_parquet_10s_bid(cfg_local)
+        df10 = bc.add_synthetic_bidask(df_bid, cfg_local)
+
+        o = df10["open_bid"].resample("1min", label="right", closed="right").first()
+        h = df10["high_bid"].resample("1min", label="right", closed="right").max()
+        l = df10["low_bid"].resample("1min", label="right", closed="right").min()
+        c = df10["close_bid"].resample("1min", label="right", closed="right").last()
+        m1 = pd.DataFrame({"open": o, "high": h, "low": l, "close": c}).dropna()
+
+        body = (m1["close"] - m1["open"]).abs().astype(float)
+        mean_prev_body = body.shift(1).rolling(int(lookback)).mean().astype(float)
+        prev_high = m1["high"].shift(1).astype(float)
+        prev_low = m1["low"].shift(1).astype(float)
+
+        trig = pd.DataFrame(
+            {
+                "open": m1["open"].astype(float),
+                "close": m1["close"].astype(float),
+                "body": body,
+                "mean_prev_body": mean_prev_body,
+                "prev_high": prev_high,
+                "prev_low": prev_low,
+            },
+            index=m1.index,
+        )
+
+        trades = pd.read_csv(trades_csv)
+        trades["side"] = trades["side"].astype(str).str.lower()
+        trades = trades[trades["side"] == side].copy()
+        if trades.empty:
+            raise ValueError(f"No {side} trades in D009 verify: {trades_csv}")
+
+        trades["entry_time"] = pd.to_datetime(trades["entry_time"], utc=True, errors="coerce")
+        trades = trades.dropna(subset=["entry_time"]).copy()
+
+        # Mapping: entry_time is ts_next; evaluate ts=entry_time-10s; burst_m1_end = floor(ts)-1min
+        trades["signal_eval_ts"] = trades["entry_time"] - pd.Timedelta(seconds=10)
+        trades["burst_m1_end"] = trades["signal_eval_ts"].dt.floor("min") - pd.Timedelta(minutes=1)
+
+        trig_reset = trig.reset_index()
+        trig_reset = trig_reset.rename(columns={str(trig_reset.columns[0]): "burst_m1_end"})
+        merged = trades.merge(trig_reset, on="burst_m1_end", how="left")
+
+        close = merged["close"].astype(float)
+        open_ = merged["open"].astype(float)
+        body_f = (close - open_).abs().astype(float)
+        mean_prev = merged["mean_prev_body"].astype(float)
+        prev_hi = merged["prev_high"].astype(float)
+        prev_lo = merged["prev_low"].astype(float)
+
+        if side == "buy":
+            break_margin = (close - prev_hi).astype(float)
+        else:
+            break_margin = (prev_lo - close).astype(float)
+
+        primary = np.where(mean_prev > 0, break_margin / mean_prev, np.nan).astype(float)
+        fallback = np.where(body_f > 0, break_margin / body_f, np.nan).astype(float)
+
+        primary_s = pd.Series(primary).dropna()
+        fallback_s = pd.Series(fallback).dropna()
+
+        primary_p80 = float(primary_s.quantile(0.8)) if len(primary_s) > 0 else float("nan")
+        fallback_p80 = float(fallback_s.quantile(0.8)) if len(fallback_s) > 0 else float("nan")
+
+        chosen_feature = "break_margin_over_mean_prev_body" if len(primary_s) > 0 else "break_margin_ratio"
+        chosen_p80 = primary_p80 if chosen_feature == "break_margin_over_mean_prev_body" else fallback_p80
+        if not np.isfinite(chosen_p80):
+            raise ValueError("Could not compute p80 threshold (no non-NaN values)")
+
+        return {
+            "period_source": "D009/in_sample_2024",
+            "side": side.upper(),
+            "exclude_rate": 0.20,
+            "primary_feature": "break_margin_over_mean_prev_body",
+            "primary_p80": primary_p80,
+            "primary_n": int(len(primary_s)),
+            "fallback_feature": "break_margin_ratio",
+            "fallback_p80": fallback_p80,
+            "fallback_n": int(len(fallback_s)),
+            "chosen_feature": chosen_feature,
+            "chosen_p80": float(chosen_p80),
+            "nan_policy": "pass",
+        }
+
+    def _upsert_family_d_summary_row(*, hyp: str, verify_sum: float, verify_trades: int, forward_sum: float, forward_trades: int) -> None:
+        import csv
+
+        summary_path = _results_root() / "summary_family_D_momentum.csv"
+        summary_path.parent.mkdir(parents=True, exist_ok=True)
+
+        rows: list[dict] = []
+        if summary_path.exists():
+            with summary_path.open("r", encoding="utf-8", newline="") as f:
+                r = csv.DictReader(f)
+                rows = list(r)
+
+        by_hyp = {row["hyp"]: row for row in rows if row.get("hyp")}
+        judge = "conditional" if (forward_sum >= 0) or (forward_sum > verify_sum) else "dead"
+        by_hyp[hyp] = {
+            "hyp": hyp,
+            "verify_sum_pnl_pips": float(verify_sum),
+            "verify_trades": int(verify_trades),
+            "forward_sum_pnl_pips": float(forward_sum),
+            "forward_trades": int(forward_trades),
+            "judge": judge,
+        }
+
+        out = [by_hyp[k] for k in sorted(by_hyp.keys())]
+        with summary_path.open("w", encoding="utf-8", newline="") as f:
+            w = csv.DictWriter(
+                f,
+                fieldnames=[
+                    "hyp",
+                    "verify_sum_pnl_pips",
+                    "verify_trades",
+                    "forward_sum_pnl_pips",
+                    "forward_trades",
+                    "judge",
+                ],
+            )
+            w.writeheader()
+            for row in out:
+                w.writerow(row)
+
+    def _write_compare_vs_d009(*, out_csv: Path, model_dir: Path, model_hyp: str, side: str) -> None:
+        import csv
+
+        d009_dir = _results_root() / "family_D_momentum" / "D009"
+        rows = []
+        for period in ("in_sample_2024", "forward_2025"):
+            d009_trades = d009_dir / period / "trades.csv"
+            model_trades = model_dir / period / "trades.csv"
+            if not d009_trades.exists() or not model_trades.exists():
+                raise FileNotFoundError(f"Missing trades for compare: {d009_trades} {model_trades}")
+
+            d009_m = _read_trades_side_metrics(d009_trades, side=side)
+            model_m = _read_trades_side_metrics(model_trades, side=side)
+
+            for model_name, m in [("D009", d009_m), (model_hyp, model_m)]:
+                rows.append(
+                    {
+                        "period": ("verify" if period == "in_sample_2024" else "forward"),
+                        "side": side.upper(),
+                        "model": model_name,
+                        **m,
+                    }
+                )
+
+        out_csv.parent.mkdir(parents=True, exist_ok=True)
+        with out_csv.open("w", encoding="utf-8", newline="") as f:
+            w = csv.DictWriter(
+                f,
+                fieldnames=[
+                    "period",
+                    "side",
+                    "model",
+                    "n_trades",
+                    "n_early_loss",
+                    "early_loss_rate",
+                    "n_survivor",
+                    "survivor_rate",
+                    "sum_pnl_pips",
+                    "avg_pnl_pips",
+                ],
+            )
+            w.writeheader()
+            for r in rows:
+                w.writerow(r)
+
+    def _append_results_to_md(md_path: Path, *, thresholds: dict, meta: dict, compare_csv: Path, base_compare_hyp: str) -> None:
+        text = md_path.read_text(encoding="utf-8")
+        if "## 結果メモ（後で記入）" not in text:
+            raise ValueError(f"Missing results section in: {md_path}")
+        if "feature=" in text and "compare CSV" in text:
+            # already filled (avoid duplicates)
+            return
+
+        verify_sum = float(meta["verify"]["sum_pnl_pips"])
+        verify_tr = int(meta["verify"]["trades"])
+        forward_sum = float(meta["forward"]["sum_pnl_pips"])
+        forward_tr = int(meta["forward"]["trades"])
+
+        add = []
+        add.append("")
+        add.append(f"- p80閾値（verify基準）: feature={thresholds['chosen_feature']} p80={thresholds['chosen_p80']}")
+        add.append(f"- 2024 verify: sum_pnl_pips={verify_sum}, trades={verify_tr}")
+        add.append(f"- 2025 forward: sum_pnl_pips={forward_sum}, trades={forward_tr}")
+        add.append(f"- thresholds.json: {(_results_root() / meta['family'] / meta['hyp'] / 'thresholds.json')}")
+        add.append(f"- compare CSV（{base_compare_hyp}比）: {compare_csv}")
+
+        md_path.write_text(text + "\n" + "\n".join(add) + "\n", encoding="utf-8")
+
+    if args.hyp in ("D011a", "D011b"):
+        # D011a/b: exclude top20% exhaustion signals.
+        # Thresholds are computed from verify(2024) only (no forward leakage), using D009 verify trades.
+        is_buy = (args.hyp == "D011a")
+        side = "buy" if is_buy else "sell"
+
+        thresholds = _compute_exhaustion_thresholds_from_d009_verify(side=side)
+
+        cfg = HypConfig(
+            family="family_D_momentum",
+            hyp=str(args.hyp),
+            symbol=str(args.symbol).upper(),
+            root=str(root),
+            only_session=None,
+            verify_from_month=str(args.verify_from_month),
+            verify_to_month=str(args.verify_to_month),
+            forward_from_month=str(args.forward_from_month),
+            forward_to_month=str(args.forward_to_month),
+            spread_pips=float(args.spread_pips),
+            use_h1_trend_filter=True,
+            use_time_filter=False,
+            entry_mode="D_m1_momentum",
+            disable_m1_bias_filter=False,
+            dump_trades=True,
+            momentum_mode="D004_continuation",
+            allow_buy=True if is_buy else False,
+            allow_sell=False if is_buy else True,
+            exhaustion_filter_enabled=True,
+            exhaustion_apply_side=side,
+            exhaustion_feature=str(thresholds["chosen_feature"]),
+            exhaustion_threshold=float(thresholds["chosen_p80"]),
+            exhaustion_nan_policy="pass",
+        )
+        meta = _run_variant_inprocess(cfg, run_tag=str(args.hyp).lower())
+
+        out_root = _results_root() / "family_D_momentum" / str(args.hyp)
+        (out_root / "thresholds.json").write_text(json.dumps(thresholds, ensure_ascii=False, indent=2), encoding="utf-8")
+
+        compare_csv = out_root / "diagnostics" / ("early_loss_compare_vs_D009_buy.csv" if is_buy else "early_loss_compare_vs_D009_sell.csv")
+        _write_compare_vs_d009(out_csv=compare_csv, model_dir=out_root, model_hyp=str(args.hyp), side=side)
+
+        _upsert_family_d_summary_row(
+            hyp=str(args.hyp),
+            verify_sum=float(meta["verify"]["sum_pnl_pips"]),
+            verify_trades=int(meta["verify"]["trades"]),
+            forward_sum=float(meta["forward"]["sum_pnl_pips"]),
+            forward_trades=int(meta["forward"]["trades"]),
+        )
+
+        md_path = Path("FX/30_hypotheses/family_D_momentum") / ("D011a_exhaustion_ratio_buy.md" if is_buy else "D011b_exhaustion_ratio_sell.md")
+        _append_results_to_md(md_path, thresholds=thresholds, meta=meta, compare_csv=compare_csv, base_compare_hyp="D009")
+
         print("[runner] done. summary:", json.dumps(meta, ensure_ascii=False), flush=True)
         return 0
 

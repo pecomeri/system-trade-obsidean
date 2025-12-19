@@ -135,4 +135,4 @@ tags:
 - 次の観測は ratio 化（break_margin/body）と burst_strength で確認
 
 ここでbuyしか見てないことに気づいた。
-[[D009_observe_sell_side]]でsellもいれて観測し直し。
+[[D009_observe_buysell_side_24h_baseline]]でsellもいれて観測し直し。
