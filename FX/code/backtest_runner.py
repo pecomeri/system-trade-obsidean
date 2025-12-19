@@ -39,6 +39,7 @@ class HypConfig:
     regime_mode: str | None = None      # e.g. "m1_compression"
     dump_trades: bool = False
     momentum_mode: str | None = None    # e.g. "D004_continuation"
+    no_weekend_entry: bool = False      # D005: block new entries near week transition
 
 
 def _run_core(cmd: list[str]) -> Path:
@@ -205,6 +206,29 @@ def _run_core_inprocess(cfg: HypConfig, *, from_month: str, to_month: str, run_t
 
         patches.append(_temporary_attr(bc, "high_breakout_10s", _m1_momentum_burst_up))
         patches.append(_temporary_attr(bc, "low_breakout_10s", _m1_momentum_burst_down))
+
+    if cfg.no_weekend_entry:
+        # D005 filter: block *new entries only* near week transition.
+        # Implemented by tightening core's time filter at evaluation timestamp `ts` (10s bar).
+        # This does not touch exits/position management.
+        from datetime import time as dtime
+
+        _orig_is_trading_time = bc.is_trading_time
+
+        def _is_trading_time_no_weekend(ts, core_cfg):  # noqa: ANN001
+            if not _orig_is_trading_time(ts, core_cfg):
+                return False
+            # timestamps are expected in UTC (tz-aware). We intentionally evaluate on `ts`
+            # (the 10s bar where signal is checked), not on entry_time (ts_next).
+            dow = ts.dayofweek  # Mon=0 ... Sun=6
+            t = ts.timetz().replace(tzinfo=None)
+            if dow == 4 and t >= dtime(20, 0):  # Fri >= 20:00 UTC
+                return False
+            if dow == 0 and t < dtime(2, 0):  # Mon < 02:00 UTC
+                return False
+            return True
+
+        patches.append(_temporary_attr(bc, "is_trading_time", _is_trading_time_no_weekend))
 
     with contextlib.ExitStack() as stack:
         for p in patches:
@@ -438,6 +462,7 @@ def _run_variant_inprocess(cfg: HypConfig, *, run_tag: str) -> dict:
             "regime_mode": cfg.regime_mode,
             "dump_trades": cfg.dump_trades,
             "momentum_mode": cfg.momentum_mode,
+            "no_weekend_entry": cfg.no_weekend_entry,
         },
     }
     (out_root / "config.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -613,7 +638,7 @@ def parse_args() -> argparse.Namespace:
             "B001", "B002", "B003", "B004", "B005", "B006", "B007", "B008",
             "C001", "C002", "C003", "C004", "C005",
             "C101", "C102", "C103",
-            "D001", "D002", "D003", "D004",
+            "D001", "D002", "D003", "D004", "D005",
         ],
     )
     p.add_argument("--symbol", default="USDJPY")
@@ -766,11 +791,12 @@ def main() -> int:
                 ],
             )
             w.writeheader()
-            for hyp, regime_mode, use_h1 in [
-                ("D001", None, None),
-                ("D002", "m1_compression", None),
-                ("D003", None, False),
-                ("D004", None, None),
+            for hyp, regime_mode, use_h1, no_weekend in [
+                ("D001", None, None, False),
+                ("D002", "m1_compression", None, False),
+                ("D003", None, False, False),
+                ("D004", None, None, False),
+                ("D005", None, None, True),
             ]:
                 cfg = HypConfig(
                     family=family,
@@ -788,7 +814,8 @@ def main() -> int:
                     disable_m1_bias_filter=True,
                     regime_mode=regime_mode,
                     dump_trades=True,
-                    momentum_mode=("D004_continuation" if hyp == "D004" else None),
+                    momentum_mode=("D004_continuation" if hyp in ("D004", "D005") else None),
+                    no_weekend_entry=no_weekend,
                 )
                 meta = _run_variant_inprocess(cfg, run_tag=hyp.lower())
 
@@ -1075,7 +1102,7 @@ def main() -> int:
         print("[runner] done. summary:", json.dumps(meta, ensure_ascii=False), flush=True)
         return 0
 
-    if args.hyp in ("D001", "D002", "D003", "D004"):
+    if args.hyp in ("D001", "D002", "D003", "D004", "D005"):
         cfg = HypConfig(
             family="family_D_momentum",
             hyp=str(args.hyp),
@@ -1092,7 +1119,8 @@ def main() -> int:
             disable_m1_bias_filter=True,
             regime_mode=("m1_compression" if args.hyp == "D002" else None),
             dump_trades=True,
-            momentum_mode=("D004_continuation" if args.hyp == "D004" else None),
+            momentum_mode=("D004_continuation" if args.hyp in ("D004", "D005") else None),
+            no_weekend_entry=(args.hyp == "D005"),
         )
         meta = _run_variant_inprocess(cfg, run_tag=str(args.hyp).lower())
         print("[runner] done. summary:", json.dumps(meta, ensure_ascii=False), flush=True)

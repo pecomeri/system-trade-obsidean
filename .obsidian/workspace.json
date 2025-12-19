@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "FX/30_hypotheses/family_D_momentum/D002.md",
+                "file": "FX/30_hypotheses/family_D_momentum/D005_no_weekend_entry.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "D002"
+              "title": "D005_no_weekend_entry"
             }
           }
         ]
@@ -33,12 +33,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "FX/10_regimes/m1_compression.md",
+                "file": "FX/27_filters/no_weekend_entry.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "m1_compression"
+              "title": "no_weekend_entry"
             }
           }
         ]
@@ -114,7 +114,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "FX/30_hypotheses/family_D_momentum/D002.md",
+                "file": "FX/27_filters/no_weekend_entry.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -124,7 +124,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "D002へのバックリンク"
+              "title": "no_weekend_entryへのバックリンク"
             }
           },
           {
@@ -203,43 +203,43 @@
       "bases:Create new base": false
     }
   },
-  "active": "dcb8e0cb9e4f8ed6",
+  "active": "90af20c70870ac66",
   "lastOpenFiles": [
-    "FX/10_regimes/m1_compression.md",
-    "FX/30_hypotheses/family_C_m1entry/C005_no_time_filter.md",
-    "FX/30_hypotheses/family_D_momentum/D002.md",
-    "FX/30_hypotheses/family_D_momentum/D001.md",
-    "FX/10_regimes/high_vol_trend.md",
-    "FX/results/d002_sess_W1_2025-01_2025-12_20251218_030307/monthly_by_session.csv",
-    "FX/results/d002_sess_W1_2025-01_2025-12_20251218_030307/monthly.csv",
-    "FX/results/d002_sess_W1_2025-01_2025-12_20251218_030307/trades.csv",
-    "FX/results/d002_sess_W1_2025-01_2025-12_20251218_030307/runlog.jsonl",
-    "FX/results/d002_sess_W1_2025-01_2025-12_20251218_030307/config.json",
-    "FX/results/d002_sess_W1_2025-01_2025-12_20251218_030307",
-    "FX/results/d002_sess_W1_2024-01_2024-12_20251218_030249/monthly_by_session.csv",
-    "FX/results/d002_sess_W1_2024-01_2024-12_20251218_030249/monthly.csv",
-    "FX/results/d002_sess_W1_2024-01_2024-12_20251218_030249/trades.csv",
-    "FX/results/d002_sess_W1_2024-01_2024-12_20251218_030249/runlog.jsonl",
-    "FX/results/family_D_momentum/D002/README.md",
-    "FX/27_filters/F-D001_W1_only_h1_uptrend.md",
+    "FX/30_hypotheses/family_D_momentum/D005_no_weekend_entry.md",
+    "FX/27_filters/no_weekend_entry.md",
     "FX/10_regimes/h1_trend_up.md",
     "FX/10_regimes/execution_ok_500ms.md",
-    "FX/30_hypotheses/family_D_momentum/D001_baseline.md",
+    "FX/10_regimes/W1_only.md",
+    "FX/results/family_D_momentum/D005/charts/index.html",
+    "FX/results/family_D_momentum/D005/charts/trade_227.html",
+    "FX/results/family_D_momentum/D005/charts/trade_221.html",
+    "FX/results/family_D_momentum/D005/charts/trade_219.html",
+    "FX/results/family_D_momentum/D005/charts/trade_218.html",
+    "FX/results/family_D_momentum/D005/charts/trade_217.html",
+    "FX/results/family_D_momentum/D005/charts/trade_214.html",
+    "FX/results/family_D_momentum/D005/charts/trade_208.html",
+    "FX/results/family_D_momentum/D005/charts/trade_207.html",
+    "FX/results/family_D_momentum/D005/charts/trade_2.html",
+    "FX/15_filters/no_weekend_entry.md",
+    "FX/10_regimes/00_プロンプト.md",
+    "FX/30_hypotheses/family_D_momentum/D005a_m1_momentum_burst_london_only.md",
     "FX/10_regimes/london_active.md",
-    "FX/results/family_D_momentum/D001/README.md",
+    "FX/10_regimes/m1_compression.md",
+    "FX/10_regimes/high_vol_trend.md",
+    "FX/27_filters/execution_ok_500ms.md",
+    "FX/27_filters/h1_trend_up.md",
+    "FX/27_filters/W1_only.md",
+    "FX/30_hypotheses/family_B_failedbreakout/B002_W1_only.md",
+    "FX/30_hypotheses/family_D_momentum/D004_m1_momentum_burst_break_prev.md",
+    "FX/20_strategies/D004_m1_momentum_burst_break_prev.md",
     "FX/20_strategies/D001_m1_momentum_burst_range_only.md",
-    "FX/10_regimes/D001_W1_only_h1_uptrend.md",
-    "FX/10_regimes/D001_regime_W1_H1_trend_bias.md",
-    "FX/20_strategies/D001_M1_momentum_burst_price_range_only.md",
-    "FX/results/logic_matrix_ABC.md",
-    "FX/30_hypotheses/family_C_m1entry_v2/C102_no_h1_filter.md",
-    "FX/00_Index/全体状況まとめ.md",
-    "FX/30_hypotheses/family_C_m1entry/C001_baseline.md",
-    "FX/30_hypotheses/family_C_m1entry_v2/C101_baseline.md",
-    "FX/00_Index/family_A_B_C_summary.md",
-    "FX/30_hypotheses/family_A_breakout/A003：H1なし（上位足フィルターの価値を測る）.md",
-    "FX/35_hypotheses2/H-S001_EB001_FC001.md",
-    "FX/30_hypotheses/family_C_m1entry/C002_W1_only.md",
-    "FX/30_hypotheses/family_C_m1entry/C003_no_h1_filter.md"
+    "FX/20_strategies/momentum_burst.md",
+    "FX/30_hypotheses/family_D_momentum/D002.md",
+    "FX/30_hypotheses/family_D_momentum/D003.md",
+    "FX/30_hypotheses/family_D_momentum/D001.md",
+    "FX/results/family_D_momentum/D003/README.md",
+    "FX/results/family_D_momentum/D004/README.md",
+    "FX/30_hypotheses/family_A_breakout/A001：ベースライン（板フィルターなし）.md",
+    "FX/30_hypotheses/family_C_m1entry/C005_no_time_filter.md"
   ]
 }

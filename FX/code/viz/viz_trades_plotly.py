@@ -224,6 +224,49 @@ def _render_trade_plotly(*, m1, trade, out_html: Path) -> None:
     entry_px = float(trade["entry_price"])
     exit_px = float(trade["exit_price"])
 
+    # Extra timestamps to avoid confusion between:
+    #   - trigger (confirmed M1) vs
+    #   - signal evaluation bar (10s) vs
+    #   - execution (next 10s open; entry_time)
+    #
+    # We do NOT have raw 10s bars here. So we approximate:
+    #   signal_eval_ts ~= entry_time - 10s
+    # which matches core's entry_on_next_open model (ts_next).
+    signal_eval_ts = entry_ts - pd.Timedelta(seconds=10)
+    burst_m1_end = signal_eval_ts.ceil("min") - pd.Timedelta(minutes=1)
+    burst_m1_start = burst_m1_end - pd.Timedelta(minutes=1)
+
+    # Highlight trigger M1 candle window (start..end)
+    fig.add_vrect(
+        x0=burst_m1_start,
+        x1=burst_m1_end,
+        fillcolor="rgba(0,128,255,0.10)",
+        line_width=0,
+        layer="below",
+    )
+
+    fig.add_vline(x=burst_m1_end, line_color="rgba(0,128,255,0.9)", line_width=2)
+    fig.add_annotation(
+        x=burst_m1_end,
+        y=1.0,
+        yref="paper",
+        text="burst_m1_end",
+        showarrow=False,
+        xanchor="left",
+        font=dict(color="rgba(0,128,255,0.95)", size=11),
+    )
+
+    fig.add_vline(x=signal_eval_ts, line_color="rgba(255,140,0,0.9)", line_width=2, line_dash="dot")
+    fig.add_annotation(
+        x=signal_eval_ts,
+        y=0.96,
+        yref="paper",
+        text="signal_eval_ts (~entry-10s)",
+        showarrow=False,
+        xanchor="left",
+        font=dict(color="rgba(255,140,0,0.95)", size=11),
+    )
+
     fig.add_vline(x=entry_ts, line_color="green", line_width=2)
     fig.add_vline(x=exit_ts, line_color="red", line_width=2)
     fig.add_trace(go.Scatter(x=[entry_ts], y=[entry_px], mode="markers", marker=dict(color="green", size=10), name="entry"))
@@ -388,6 +431,10 @@ def _render_trade_svg_html(*, m1, trade, out_html: Path) -> None:
     entry_px = float(trade["entry_price"])
     exit_px = float(trade["exit_price"])
 
+    signal_eval_ts = entry_ts - pd.Timedelta(seconds=10)
+    burst_m1_end = signal_eval_ts.ceil("min") - pd.Timedelta(minutes=1)
+    burst_m1_start = burst_m1_end - pd.Timedelta(minutes=1)
+
     # Canvas
     width = 1100
     height = 520
@@ -422,6 +469,9 @@ def _render_trade_svg_html(*, m1, trade, out_html: Path) -> None:
     times = m1.index
     idx_entry = int(times.get_indexer([entry_ts], method="nearest")[0])
     idx_exit = int(times.get_indexer([exit_ts], method="nearest")[0])
+    idx_signal = int(times.get_indexer([signal_eval_ts], method="nearest")[0])
+    idx_burst_end = int(times.get_indexer([burst_m1_end], method="nearest")[0])
+    idx_burst_start = int(times.get_indexer([burst_m1_start], method="nearest")[0])
 
     # Candles
     candle_svg = []
@@ -450,7 +500,15 @@ def _render_trade_svg_html(*, m1, trade, out_html: Path) -> None:
     y_entry = y_at(entry_px)
     y_exit = y_at(exit_px)
 
+    x_signal = x_at(max(0, min(n - 1, idx_signal)))
+    x_burst_end = x_at(max(0, min(n - 1, idx_burst_end)))
+    x_burst_start = x_at(max(0, min(n - 1, idx_burst_start)))
+
     overlays = [
+        # burst window highlight (approx)
+        f"<rect x='{x_burst_start:.2f}' y='{pad_t:.2f}' width='{max(1.0, x_burst_end - x_burst_start):.2f}' height='{plot_h:.2f}' fill='rgba(0,128,255,0.10)' />",
+        f"<line x1='{x_burst_end:.2f}' y1='{pad_t:.2f}' x2='{x_burst_end:.2f}' y2='{(pad_t + plot_h):.2f}' stroke='rgba(0,128,255,0.9)' stroke-width='2' />",
+        f"<line x1='{x_signal:.2f}' y1='{pad_t:.2f}' x2='{x_signal:.2f}' y2='{(pad_t + plot_h):.2f}' stroke='rgba(255,140,0,0.9)' stroke-width='2' stroke-dasharray='4,3' />",
         f"<line x1='{x_entry:.2f}' y1='{pad_t:.2f}' x2='{x_entry:.2f}' y2='{(pad_t + plot_h):.2f}' stroke='green' stroke-width='2' />",
         f"<line x1='{x_exit:.2f}' y1='{pad_t:.2f}' x2='{x_exit:.2f}' y2='{(pad_t + plot_h):.2f}' stroke='red' stroke-width='2' />",
         # horizontal price lines (so exit level is visible)
@@ -460,6 +518,8 @@ def _render_trade_svg_html(*, m1, trade, out_html: Path) -> None:
         f"<circle cx='{x_exit:.2f}' cy='{y_exit:.2f}' r='4' fill='red' />",
         f"<text x='{(x_entry + 6):.2f}' y='{(y_entry - 6):.2f}' font-size='11' font-family='sans-serif' fill='green'>entry {entry_px:.3f}</text>",
         f"<text x='{(x_exit + 6):.2f}' y='{(y_exit + 14):.2f}' font-size='11' font-family='sans-serif' fill='red'>exit {exit_px:.3f}</text>",
+        f"<text x='{(x_signal + 6):.2f}' y='{(pad_t + 12):.2f}' font-size='11' font-family='sans-serif' fill='rgba(255,140,0,0.95)'>signal_eval_ts</text>",
+        f"<text x='{(x_burst_end + 6):.2f}' y='{(pad_t + 26):.2f}' font-size='11' font-family='sans-serif' fill='rgba(0,128,255,0.95)'>burst_m1_end</text>",
     ]
 
     title = f"trade_id={t_id} side={side} pnl_pips={pnl}"
