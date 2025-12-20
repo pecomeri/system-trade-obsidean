@@ -290,3 +290,43 @@ strong_break_exhaustion は常に悪なのではなく、
 - BUY は short/long いずれも strong が early_loss_rate 高めで、verify/forward で一致。
 - SELL は long×strong が early_loss_rate 低めで一致。short×strong は verify/forward で不一致。
 - holding_time 分布の方向性は不安定で、主結論は early_loss_rate に限定する。
+
+
+
+status: observed
+result:
+  interaction_effect: yes
+  key_pattern:
+    buy:
+      - strong_break increases early_loss regardless of pre_range_length
+    sell:
+      - long_range × strong_break shows lower early_loss_rate
+      - short_range × strong_break is unstable (no direction consistency)
+  affected_metric:
+    - early_loss_rate
+  thresholds:
+    pre_range_length:
+      q33: 0
+      q66: 3
+    exhaustion_p80:
+      buy: 3.2409795918349475
+      sell: 2.965517241378161
+notes:
+  - BUY/SELL show asymmetric interaction with exhaustion
+  - holding_time was unstable and not used for main conclusion
+  - No filtering or optimization applied
+
+
+
+## 終了メモ
+
+D012a → D012e により、
+momentum burst における early_loss 優勢は
+pre_range_length と exhaustion の相互作用で部分的に分解可能であることが確認された。
+
+特に、
+- BUY では strong_break_exhaustion は一貫して early_loss を増加させる
+- SELL では long_range に限り strong_break が毒ではない可能性が示唆された
+
+本観測は、family 分離（F系：range-compression breakout）検討の十分条件を満たしたと判断し、
+これ以上の observe は行わず、ここでクローズする。
