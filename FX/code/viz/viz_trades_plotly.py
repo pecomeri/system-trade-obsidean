@@ -28,6 +28,7 @@ from __future__ import annotations
 import argparse
 import base64
 import io
+import json
 import sys
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -127,6 +128,7 @@ def load_m1_ohlc_from_10s_parquet_range(
     start_utc: datetime,
     end_utc: datetime,
     price_columns: PriceColumns | None = None,
+    freq: str = "1min",
 ) -> "object":
     """
     Loads only the time range needed and returns a pandas DataFrame:
@@ -160,6 +162,14 @@ def load_m1_ohlc_from_10s_parquet_range(
 
     df10 = pd.concat(parts, ignore_index=True).sort_values(pc.ts).drop_duplicates(pc.ts)
     df10 = df10.set_index(pc.ts)
+
+    if freq == "10s":
+        out = df10.rename(columns={pc.open: "open", pc.high: "high", pc.low: "low", pc.close: "close"})
+        out = out[["open", "high", "low", "close"]].astype(float).sort_index().dropna()
+        return out
+
+    if freq != "1min":
+        raise ValueError(f"Unsupported freq: {freq}")
 
     o = df10[pc.open].astype(float).resample("1min").first()
     h = df10[pc.high].astype(float).resample("1min").max()
@@ -298,6 +308,42 @@ def _render_trade_plotly(*, m1, trade, out_html: Path) -> None:
         font=dict(color="red"),
     )
 
+    fb = trade.get("__failed_breakout__")
+    if isinstance(fb, dict) and fb.get("fail_ts") is not None:
+        fail_ts = fb.get("fail_ts")
+        fail_px = fb.get("fail_px")
+        break_ts = fb.get("break_ts")
+        break_px = fb.get("break_px")
+        prev_low = fb.get("prev_low")
+
+        if prev_low is not None:
+            fig.add_hline(y=float(prev_low), line_color="#888", line_width=1, line_dash="dot", opacity=0.6)
+        label = fb.get("label", "M1 proxy")
+        if break_ts is not None and break_px is not None:
+            fig.add_trace(
+                go.Scatter(
+                    x=[break_ts],
+                    y=[break_px],
+                    mode="markers+text",
+                    text=[f"breakdown ({label})"],
+                    textposition="top center",
+                    marker=dict(symbol="triangle-down", color="#F58518", size=10),
+                    name="breakdown",
+                )
+            )
+        if fail_ts is not None and fail_px is not None:
+            fig.add_trace(
+                go.Scatter(
+                    x=[fail_ts],
+                    y=[fail_px],
+                    mode="markers+text",
+                    text=[f"fail ({label})"],
+                    textposition="bottom center",
+                    marker=dict(symbol="triangle-up", color="#4C78A8", size=10),
+                    name="fail",
+                )
+            )
+
     # highlight the M1 candle that contains the exit_time (visual anchor)
     if len(m1.index) > 0:
         exit_m1 = exit_ts.floor("min")
@@ -378,6 +424,20 @@ def _render_trade_matplotlib_html(*, m1, trade, out_html: Path) -> None:
     ax.axvline(mdates.date2num(exit_ts.to_pydatetime()), color="red", linewidth=2)
     ax.scatter([mdates.date2num(entry_ts.to_pydatetime())], [entry_px], color="green", s=30, zorder=10)
     ax.scatter([mdates.date2num(exit_ts.to_pydatetime())], [exit_px], color="red", s=30, zorder=10)
+
+    fb = trade.get("__failed_breakout__")
+    if isinstance(fb, dict) and fb.get("fail_ts") is not None:
+        fail_ts = fb.get("fail_ts")
+        fail_px = fb.get("fail_px")
+        break_ts = fb.get("break_ts")
+        break_px = fb.get("break_px")
+        prev_low = fb.get("prev_low")
+        if prev_low is not None:
+            ax.axhline(prev_low, color="#888", linestyle="--", linewidth=1)
+        if break_ts is not None and break_px is not None:
+            ax.scatter([mdates.date2num(break_ts.to_pydatetime())], [break_px], color="#F58518", s=40, marker="v", zorder=10)
+        if fail_ts is not None and fail_px is not None:
+            ax.scatter([mdates.date2num(fail_ts.to_pydatetime())], [fail_px], color="#4C78A8", s=40, marker="^", zorder=10)
 
     ax.set_title(f"trade_id={t_id} side={side} pnl_pips={pnl}")
     ax.set_xlabel("time (UTC)")
@@ -524,6 +584,29 @@ def _render_trade_svg_html(*, m1, trade, out_html: Path) -> None:
         f"<text x='{(x_burst_end + 6):.2f}' y='{(pad_t + 26):.2f}' font-size='11' font-family='sans-serif' fill='rgba(0,128,255,0.95)'>burst_m1_end</text>",
     ]
 
+    fb = trade.get("__failed_breakout__")
+    if isinstance(fb, dict) and fb.get("fail_ts") is not None:
+        fail_ts = fb.get("fail_ts")
+        fail_px = fb.get("fail_px")
+        break_ts = fb.get("break_ts")
+        break_px = fb.get("break_px")
+        prev_low = fb.get("prev_low")
+        if prev_low is not None:
+            y_prev = y_at(float(prev_low))
+            overlays.append(
+                f"<line x1='{pad_l:.2f}' y1='{y_prev:.2f}' x2='{(pad_l + plot_w):.2f}' y2='{y_prev:.2f}' stroke='#888' stroke-width='1' stroke-dasharray='4,3' />"
+            )
+        if break_ts is not None and break_px is not None:
+            idx_break = int(times.get_indexer([break_ts], method='nearest')[0])
+            x_break = x_at(max(0, min(n - 1, idx_break)))
+            y_break = y_at(float(break_px))
+            overlays.append(f"<polygon points='{x_break-4:.2f},{y_break-3:.2f} {x_break+4:.2f},{y_break-3:.2f} {x_break:.2f},{y_break+4:.2f}' fill='#F58518' />")
+        if fail_ts is not None and fail_px is not None:
+            idx_fail = int(times.get_indexer([fail_ts], method='nearest')[0])
+            x_fail = x_at(max(0, min(n - 1, idx_fail)))
+            y_fail = y_at(float(fail_px))
+            overlays.append(f"<polygon points='{x_fail-4:.2f},{y_fail+3:.2f} {x_fail+4:.2f},{y_fail+3:.2f} {x_fail:.2f},{y_fail-4:.2f}' fill='#4C78A8' />")
+
     title = f"trade_id={t_id} side={side} pnl_pips={pnl}"
     x0 = times.min()
     x1 = times.max()
@@ -568,8 +651,50 @@ def _render_trade_svg_html(*, m1, trade, out_html: Path) -> None:
     out_html.write_text(html, encoding="utf-8")
 
 
-def _render_trade_html(*, m1, trade, out_html: Path) -> str:
+def _compute_failed_breakout_markers(*, m1, trade, lookback_bars: int):
+    import pandas as pd
+
+    entry_ts = pd.to_datetime(trade["entry_time"], utc=True)
+    if m1 is None or len(m1) == 0:
+        return None
+
+    prev_low = m1["low"].shift(1).rolling(int(lookback_bars)).min()
+    breakout = m1["close"] < prev_low
+    fail = breakout.shift(1) & (m1["close"] > prev_low.shift(1))
+
+    fail_idx = fail[fail].index
+    fail_idx = fail_idx[fail_idx <= entry_ts]
+    if len(fail_idx) == 0:
+        return None
+    fail_ts = fail_idx[-1]
+
+    break_idx = breakout[breakout].index
+    break_idx = break_idx[break_idx < fail_ts]
+    break_ts = break_idx[-1] if len(break_idx) else None
+
+    fail_px = float(m1.loc[fail_ts, "close"])
+    break_px = float(m1.loc[break_ts, "close"]) if break_ts is not None else None
+    prev_low_val = prev_low.loc[fail_ts]
+    prev_low_val = float(prev_low_val) if pd.notna(prev_low_val) else None
+    label = "10s" if str(trade.get("__viz_tf__", "")) == "10s" else "M1 proxy"
+
+    return {
+        "break_ts": break_ts,
+        "break_px": break_px,
+        "fail_ts": fail_ts,
+        "fail_px": fail_px,
+        "prev_low": prev_low_val,
+        "label": label,
+    }
+
+
+def _render_trade_html(*, m1, trade, out_html: Path, annotate_failed_breakout: bool, lookback_bars: int) -> str:
     # Prefer Plotly, fallback to Matplotlib.
+    if annotate_failed_breakout:
+        fb = _compute_failed_breakout_markers(m1=m1, trade=trade, lookback_bars=lookback_bars)
+        if fb is not None:
+            trade = dict(trade)
+            trade["__failed_breakout__"] = fb
     try:
         _render_trade_plotly(m1=m1, trade=trade, out_html=out_html)
         return "plotly"
@@ -593,6 +718,7 @@ def main() -> int:
     p.add_argument("--symbol", required=True)
     p.add_argument("--data_root", default="FX/code/dukas_out_v2")
     p.add_argument("--window_minutes", type=int, default=30)
+    p.add_argument("--tf", default="1min", choices=["1min", "10s"], help="Chart timeframe for OHLC.")
     p.add_argument(
         "--window_anchor",
         default="auto",
@@ -616,6 +742,8 @@ def main() -> int:
         default="pnl_pips_asc",
         choices=["pnl_pips_asc", "pnl_pips_desc", "abs_pnl_pips_desc", "entry_time_asc", "entry_time_desc"],
     )
+    p.add_argument("--annotate_failed_breakout", action="store_true", help="Annotate B failed-breakout proxy on charts (M1-based).")
+    p.add_argument("--lookback_bars", type=int, default=None, help="Override lookback_bars for failed-breakout annotation.")
     args = p.parse_args()
 
     import pandas as pd
@@ -630,6 +758,10 @@ def main() -> int:
     if trades.empty:
         print("[viz] trades.csv is empty; nothing to plot.", flush=True)
         return 0
+
+    if "trade_id" not in trades.columns:
+        trades = trades.copy()
+        trades.insert(0, "trade_id", range(1, len(trades) + 1))
 
     required = ["trade_id", "side", "entry_time", "entry_price", "exit_time", "exit_price", "pnl_pips"]
     missing = [c for c in required if c not in trades.columns]
@@ -659,6 +791,16 @@ def main() -> int:
     )
     data_root = Path(args.data_root)
     pc = _detect_price_columns_from_data_root(data_root, args.symbol)
+    run_cfg = results_dir / "config.json"
+    lookback_bars = int(args.lookback_bars) if args.lookback_bars is not None else None
+    if lookback_bars is None and run_cfg.exists():
+        try:
+            cfg = json.loads(run_cfg.read_text(encoding="utf-8"))
+            lookback_bars = int(cfg.get("lookback_bars", 6))
+        except Exception:  # noqa: BLE001
+            lookback_bars = 6
+    if lookback_bars is None:
+        lookback_bars = 6
 
     charts_dir = results_dir / "charts"
     charts_dir.mkdir(parents=True, exist_ok=True)
@@ -699,6 +841,7 @@ def main() -> int:
                     start_utc=ms,
                     end_utc=me,
                     price_columns=pc,
+                    freq=args.tf,
                 )
             parts.append(m1_cache[key])
 
@@ -710,7 +853,14 @@ def main() -> int:
         trade_dict["__viz_window_anchor__"] = anchored
         trade_dict["__viz_window_start__"] = str(s)
         trade_dict["__viz_window_end__"] = str(e)
-        engine = _render_trade_html(m1=sub, trade=trade_dict, out_html=out_html)
+        trade_dict["__viz_tf__"] = args.tf
+        engine = _render_trade_html(
+            m1=sub,
+            trade=trade_dict,
+            out_html=out_html,
+            annotate_failed_breakout=bool(args.annotate_failed_breakout),
+            lookback_bars=lookback_bars,
+        )
         engines[engine] = engines.get(engine, 0) + 1
 
         index_rows.append(

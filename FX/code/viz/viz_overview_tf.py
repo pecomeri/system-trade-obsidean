@@ -449,6 +449,9 @@ def main() -> int:
     if trades.empty:
         print("[overview] trades.csv empty", flush=True)
         return 0
+    if "trade_id" not in trades.columns:
+        trades = trades.copy()
+        trades.insert(0, "trade_id", range(1, len(trades) + 1))
 
     # Pass visualization preferences without expanding the function signature too much.
     trades._viz_show_labels = (not args.no_labels)  # type: ignore[attr-defined]

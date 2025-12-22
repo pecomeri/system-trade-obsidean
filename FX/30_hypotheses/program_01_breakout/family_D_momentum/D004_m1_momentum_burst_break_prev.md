@@ -1,28 +1,17 @@
 ---
 id: D004
 family: family_D_momentum
-
-strategy: "[[D004_m1_momentum_burst_break_prev]]"
+strategy: "[[FX/30_hypotheses/program_01_breakout/family_D_momentum/D004_m1_momentum_burst_break_prev]]"
 base_strategy: "[[D001_m1_momentum_burst_range_only]]"
-
-
 filters:
   - "[[W1_only]]"
   - "[[h1_trend_up]]"
-
-
 regimes:
   - none
-# または
-# regimes:
-#   - [[m1_compression]]
-
 timeframe_signal: M1
 timeframe_exec: 10s
-
 status: draft
 result: unknown
-
 tags:
   - fx
   - family_D_momentum

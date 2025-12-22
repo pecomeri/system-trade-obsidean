@@ -13,8 +13,8 @@ depends_on:
 timeframe_signal: M1
 timeframe_exec: 10s
 
-status: draft
-result: unknown
+status: observed
+result: signature_not_fixed
 
 tags:
   - fx
@@ -165,14 +165,29 @@ D010/D012eの exhaustion_ratio と整合させる。
 
 ---
 
+## 結果概要（Result Summary）
+
+- pre_range_length（short/mid/long）では、confirm/reject の方向が verify/forward で一致せず、BUY/SELLともに一貫した署名は固定されなかった。  
+- range_tightness では、BUY 側で wide の early_loss_rate が高めという傾向は両期間で見られたが、confirm/reject の方向は一致しなかった。  
+- probe_count では、BUY 側の clean が confirm 高め（verify 0.329 / forward 0.361）という偏りが見られた一方、quick_reject は方向不一致。  
+- exhaustion では、BUY 側の strong が early_loss_rate 高め（verify 0.106 / forward 0.146）かつ quick_reject 低め（verify 0.745 / forward 0.652）という偏りが観測されたが、SELL では方向が一致しない。  
+- クロスセル（long×strong / tight×strong）は SELL 側で verify/forward の方向が揃わず、署名としては未固定。
+
+## 考察（Discussion）
+
+- 主要な軸（pre_range_length / tightness / probe / exhaustion / cross）で verify/forward の方向一致が弱く、E001として署名は固定されなかった。  
+- D系と混ぜない理由は、D系の分布が高分散・尾部依存であること（D013）に加え、E001の署名が安定していないためである。  
+- 次の observe（E002）では、同一定義の再検証に加え、range_tightness / probe_count の定義差や別通貨での方向一致を確認する必要がある。  
+- E001の結果は「署名が不安定」という構造を固定するための記録として扱う。  
+
 ## status / result 記録（完了時に更新）
 
 - status: observed
 - result:
-  - signature_found: yes / no
+  - signature_found: no
   - key_pattern:
-      - sell_long_strong:
-      - sell_tight_strong:
+      - buy_exhaustion_strong: early_loss_rate高め/quick_reject低め（verify/forward一致）
   - notes:
       - dataset_source = D009 (24h, allow_sell=true)
       - No filtering or optimization applied
+      - thresholds fixed on verify (tightness q33/q66, probe p50, exhaustion p80)

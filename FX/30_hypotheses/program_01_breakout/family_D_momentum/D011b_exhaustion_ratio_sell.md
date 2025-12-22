@@ -2,8 +2,8 @@
 id: D011b
 family: family_D_momentum
 type: filter_variant
-strategy: "[[D004_m1_momentum_burst_break_prev]]"
-base_strategy: "[[D004_m1_momentum_burst_break_prev]]"
+strategy: "[[FX/30_hypotheses/program_01_breakout/family_D_momentum/D004_m1_momentum_burst_break_prev]]"
+base_strategy: "[[FX/30_hypotheses/program_01_breakout/family_D_momentum/D004_m1_momentum_burst_break_prev]]"
 filters:
   - "[[h1_trend_down]]"
   - "[[exhaustion_ratio_top20_sell]]"
