@@ -2,8 +2,8 @@
 id: D008
 family: family_D_momentum
 type: observation_variant
-strategy: "[[FX/30_hypotheses/program_01_breakout/family_D_momentum/D004_m1_momentum_burst_break_prev]]"
-base_strategy: "[[FX/30_hypotheses/program_01_breakout/family_D_momentum/D004_m1_momentum_burst_break_prev]]"
+strategy: "[[FX/30_hypotheses/program_01_breakout/02_1M_breakout_10s_entry/family_D_momentum/D004_m1_momentum_burst_break_prev]]"
+base_strategy: "[[FX/30_hypotheses/program_01_breakout/02_1M_breakout_10s_entry/family_D_momentum/D004_m1_momentum_burst_break_prev]]"
 filters:
   - "[[h1_trend_up]]"
 regimes:
