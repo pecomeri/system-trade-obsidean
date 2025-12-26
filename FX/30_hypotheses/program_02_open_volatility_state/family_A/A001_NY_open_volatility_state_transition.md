@@ -114,6 +114,23 @@ NYオープン前後において、価格の方向や勝敗・PnLではなく、
   - CSV（全イベント）
   - summary_md（遷移分布の要約）
 
+## ロジック（program_02_a001_ny_open_vol_transition.py）
+- 入力：10秒足を読み込み、M1にリサンプル（open/high/low/close）
+- ATR：M1のOHLCからATR（period=14）を算出
+- NYオープン時刻：`backtest_core.Config.w2_start` の時刻（UTC 13:30）をT0として使用
+- 観測ウィンドウ：
+  - T0前K_pre本（30本）
+  - T0後K_post本（30本）
+  - どちらも連続1分足で埋まっていることを必須条件とする
+- 状態分類：
+  - verify期間のATR分位（q33/q66）を閾値として固定
+  - 各ウィンドウのATR平均をlow/mid/highに分類
+- 遷移判定：
+  - pre_state → post_state を記録
+  - transition_typeは stay / up / down（low < mid < high の順序で判定）
+- 検証の確認項目：
+  - verify/forwardでup vs downの符号一致のみを確認（数値の大小は評価しない）
+
 ---
 
 ## status / result
@@ -141,31 +158,3 @@ NYオープン前後において、価格の方向や勝敗・PnLではなく、
 ## 結論（固定）
 - NYオープン前後のボラ状態遷移は、verify / forward で符号一致が確認できた。
 
-
-
-
-# Dataview：program_02 / family_A 一覧
-
-```dataview
-TABLE
-  hypothesis AS "ID",
-  title AS "Title",
-  status AS "Status",
-  timeframe AS "TF",
-  anchor_event AS "Anchor"
-FROM "FX/30_hypotheses"
-WHERE program = "program_02" AND family = "A"
-SORT hypothesis ASC
-```
-
-## Dataview：イベントCSV（verify / forward）
-
-```dataview
-TABLE pre_state, post_state, transition_type
-FROM "results/program_02_open_volatilyty_state/family_A/events_verify.csv"
-```
-
-```dataview
-TABLE pre_state, post_state, transition_type
-FROM "results/program_02_open_volatilyty_state/family_A/events_forward.csv"
-```

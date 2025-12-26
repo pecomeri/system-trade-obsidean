@@ -1,60 +1,214 @@
-# D014｜Observe Early Loss Classifiability (D009 fixed)
+---
+id: D014
+family: family_D_momentum
+type: observe
+title: D014_observe_early_loss_classifiability
 
-## Purpose
-D009 母集団を一切変更せず、
-early_loss が entry 後の価格挙動ラベルによって
-**分類可能な対象かどうか**を観測する。
+base_strategy: "[[D001_m1_momentum_burst_range_only]]"
+dataset_source: "[[D009_observe_buysell_side_24h_baseline]]"
+depends_on:
+  - "[[D007_observe_holding_time]]"
+  - "[[D013_observe_tail_contribution_and_failure_modes]]"
 
-本仮説は early_loss を減らすこと、
-戦略改善を目的としない。
+timeframe_signal: M1
+timeframe_exec: 10s
+
+status: planned
+result: TBD
+
+tags:
+  - fx
+  - family_D_momentum
+  - observe
+  - early_loss
+  - classification
+  - failure_mode
+  - meta
+---
+
+## 目的
+
+D013 において、D系（family_D_momentum）が  
+**高分散・尾部依存（tail dependency）を持つ構造**であることが観測された。
+
+本観測（D014）では、その構造の一部である  
+**early_loss（早期損失）が、entry 後の価格挙動によって  
+「分類可能な対象かどうか」**を確認する。
+
+重要：
+- 本観測は early_loss を減らすことを目的としない
+- フィルター化・最適化・戦略改善には接続しない
+- 「分類可能性が存在するかどうか」の有無のみを扱う
 
 ---
 
-## Fixed Constraints
-- D009母集団固定
-- entry / exit / SL / TP / 時間帯 / direction 不変
-- フィルター禁止
-- 閾値最適化禁止
-- 評価は verify / forward の符号一致のみ
+## 前提（母集団）
+
+- 母集団：
+  - `results/family_D_momentum/D009/`
+  - BUY / SELL 両方
+  - 24h（W1_only ではない）
+
+※ D014 は D009 の trades に対し、  
+   **entry 後にラベルを付与して集計するのみ**  
+※ entry / exit / SL / TP / 時間帯 / direction は一切変更しない
 
 ---
 
-## Observation Axes (Labels)
+## 観測仮説（問い）
 
-### L1: Immediate Directional Alignment
-- align / counter / flat
-
-### L2: Initial MAE Stage
-- small / medium / large
-
-### L3: Early Retracement Presence
-- with_retrace / no_retrace
-
-### L4: Immediate Volatility Expansion
-- expanded / not_expanded
-
-### L5: Time-to-Failure Stage
-- very_fast / fast / slow
-
-※ すべて entry 後確定ラベル
-※ 既存スケール・定義を流用する
+- early_loss は、D系母集団の中で
+  **一様な失敗（ノイズ）なのか**、
+  それとも **価格挙動に基づいて分類できる構造を持つのか**。
+- もし分類可能な軸が存在するとすれば、
+  それは verify / forward の両方で **符号一致**するか。
 
 ---
 
-## Evaluation Rule
-- early_loss 比率の大小ではなく **符号一致のみ**
-- verify / forward 両方で一致した場合のみ A 判定
-- A/B/C 判定を軸ごとに独立して行う
+## 定義（Contract）
+
+### 1) early_loss
+
+- 定義は [[D007_observe_holding_time]] と同一
+- early_loss: 0 <= holding_time_min <= 3
 
 ---
 
-## Expected Outcomes
-- A: 分類可能性あり（構造存在）
-- B: 期間依存（偶然）
-- C: 分類不能（early_loss は一様）
+### 2) 観測ラベルの原則
+
+- すべて **entry 後にのみ確定**するラベルであること
+- 価格挙動のみを使用する（出来高・板・外生情報なし）
+- entry 可否を変える条件（フィルター）にならない
+- 新しい概念・新語を導入しない
+- 閾値最適化・分位探索を行わない
 
 ---
 
-## Status
-- type: observation
-- status: planned
+## 観測項目（Labels）
+
+### 観測1：Immediate Directional Alignment
+
+entry 直後の価格が、  
+期待方向に動いたか、逆方向に動いたかを分類する。
+
+- align：有利方向の価格更新が先に発生
+- counter：不利方向の価格更新が先に発生
+- flat：どちらも発生しない
+
+※ 価格更新の定義は既存 backtest_core に従う
+
+---
+
+### 観測2：Initial MAE Stage
+
+entry から early_loss 確定までの  
+**最大逆行幅（MAE）**を段階化する。
+
+- small
+- medium
+- large
+
+※ 境界は既存スケールを流用し固定  
+※ 分位（pXX）探索は禁止
+
+---
+
+### 観測3：Early Retracement Presence
+
+early_loss に至るまでに、  
+**一度でも有利方向への戻りが発生したか**を観測する。
+
+- with_retrace
+- no_retrace
+
+※ 戻り幅・割合は使用しない
+
+---
+
+### 観測4：Immediate Volatility Expansion
+
+entry 直後のボラティリティが、
+直前状態と比較して拡張したかどうかを分類する。
+
+- expanded
+- not_expanded
+
+※ レンジ比較は既存定義を使用  
+※ 閾値最適化は禁止
+
+---
+
+### 観測5：Time-to-Failure Stage
+
+entry から early_loss 確定までの時間段階。
+
+- very_fast
+- fast
+- slow
+
+※ 段階境界は固定（D007 系と整合）
+
+---
+
+## 観測方法
+
+- 各ラベルごとに
+  - early_loss の **件数比率**
+- verify / forward を分離して算出
+- 数値の大小ではなく、
+  **「どちら側に偏るか（符号）」のみを評価**
+
+---
+
+## 期待される結論パターン（事前固定）
+
+### ケースA：分類可能性あり
+
+- 特定ラベル側に early_loss が偏る
+- verify / forward で符号一致
+- early_loss は heterogeneous な構造を持つと判断
+
+### ケースB：期間依存
+
+- verify のみ偏りあり
+- forward で消失
+- 偶然・非安定と判断
+
+### ケースC：分類不能
+
+- すべてのラベルで偏りなし
+- early_loss は D009 内では一様ノイズと判断
+
+---
+
+## 出力物（Artifacts）
+
+- `results/family_D_momentum/D014/`
+  - summary_verify.csv
+  - summary_forward.csv
+  - README.md（定義・リーク回避・使用列）
+  - thresholds.json（使用した固定境界の記録）
+
+---
+
+## 次の接続（このノードでは実施しない）
+
+- 本結果を用いたフィルター設計
+- early_loss 削減ロジック
+- 合成設計への直接反映
+
+※ それらは D014 の外側でのみ検討する
+
+---
+
+## status / result 記録（完了時に更新）
+
+- status: observed
+- result:
+  - classifiability: TBD
+  - stable_axes:
+      - axis_name: TBD
+  - notes:
+      - dataset_source = D009 (24h, allow_sell=true)
+      - Entry population unchanged
+      - No filtering or optimization applied
