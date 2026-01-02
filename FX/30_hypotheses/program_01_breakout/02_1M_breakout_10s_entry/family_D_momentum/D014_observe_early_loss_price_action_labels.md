@@ -201,14 +201,30 @@ entry から early_loss 確定までの時間段階。
 
 ---
 
+## 考察（限定）
+- initial_mae_stage は large 側で early_loss 比率が高く、verify / forward で方向一致。
+- early_retrace_presence は no_retrace 側で early_loss 比率が高く、verify / forward で方向一致。
+- immediate_volatility_expansion は expanded 側で early_loss 比率が高く、verify / forward で方向一致。
+- time_to_failure_stage は very_fast / fast が early_loss 定義内のため比率が1.0固定で、分類軸というより整合チェックに留まる。
+- immediate_directional_alignment は counter に偏っており、比較に必要な他カテゴリが不足。
+
+## 結論（固定）
+- early_loss は一様ノイズではなく、entry後ラベルの一部で **偏り（符号一致）が観測される**ため、分類可能性は「部分的にあり」と記録する。
+- ただし本結果は **分類可能性の有無の確認**に留め、フィルター化や最適化には接続しない。
+
 ## status / result 記録（完了時に更新）
 
 - status: observed
 - result:
-  - classifiability: TBD
+  - classifiability: partial (sign-consistent axes exist)
   - stable_axes:
-      - axis_name: TBD
+      - axis_name: initial_mae_stage (large側でearly_loss比率が高い)
+      - axis_name: early_retrace_presence (no_retrace側でearly_loss比率が高い)
+      - axis_name: immediate_volatility_expansion (expanded側でearly_loss比率が高い)
+      - axis_name: time_to_failure_stage (very_fast/fastはearly_loss定義内のため比率1.0で固定)
   - notes:
       - dataset_source = D009 (24h, allow_sell=true)
       - Entry population unchanged
       - No filtering or optimization applied
+      - immediate_directional_alignment は counter のみで比較不能
+      - outputs = results/family_D_momentum/D014 (summary_verify.csv / summary_forward.csv / README.md)
