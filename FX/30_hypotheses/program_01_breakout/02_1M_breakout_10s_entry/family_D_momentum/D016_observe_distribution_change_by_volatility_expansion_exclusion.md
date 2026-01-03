@@ -13,8 +13,14 @@ depends_on:
 timeframe_signal: M1
 timeframe_exec: 10s
 
-status: planned
-result: TBD
+status: observed
+result:
+  distribution_shift: true
+  early_loss_effect:
+    buy: decrease (verify/forward 方向一致)
+    sell: decrease (verify/forward 方向一致)
+  tail_dependency: mixed (buy 側は強まり、sell 側は弱まる方向; 符号反転なし)
+  filter_suitability: unknown
 
 tags:
   - fx
@@ -129,11 +135,33 @@ D014 において、early_loss の一部が
 
 ---
 
+## 結果まとめ
+
+- early_loss は BUY/SELL とも verify/forward で低下方向（方向一致）。
+- tail share は BUY 側で振れ幅が拡大、SELL 側で縮小する傾向。符号反転は確認されない。
+- 分布の集中度・歪みは BUY 側で強まり、SELL 側で弱まる方向の混在。
+- 「危険ゾーン＝利益ゾーン」の同居構造は維持されるが、形は変形している。
+
+---
+
+## 考察（限定）
+
+- early_loss は一様に低下方向だが、尾部構造は一様に弱まらない。
+- tail dependency は BUY 側で強まり、SELL 側で弱まる方向のため、全体としては混在と判断。
+- 分布は一部で不安定化（BUY の尾部寄与が拡大）し、安定化とは言い切れない。
+- 示唆はあるが結論は保留とし、設計・採用には接続しない。
+
+---
+
 ## status / result 記録（完了時に更新）
 
 - status: observed
 - result:
-  - distribution_shift: TBD
-  - early_loss_delta: TBD
-  - tail_dependency_change: TBD
-  - notes: TBD
+  - distribution_shift: true
+  - early_loss_delta: BUY/SELL とも verify/forward で低下方向（方向一致）
+  - tail_dependency_change: mixed（BUY は強まり、SELL は弱まる方向。符号反転なし）
+  - notes:
+      - immediate_volatility_expansion = expanded を除外した派生母集団で観測
+      - 分布の集中度・歪みは BUY 側で強まり、SELL 側で弱まる
+      - filter_suitability は unknown と記録
+      - outputs = FX/results/family_D_momentum/D016 (summary_verify.csv / summary_forward.csv / tail_compare.csv / README.md)
