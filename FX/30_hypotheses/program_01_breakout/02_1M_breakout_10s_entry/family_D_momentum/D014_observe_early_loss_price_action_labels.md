@@ -13,8 +13,27 @@ depends_on:
 timeframe_signal: M1
 timeframe_exec: 10s
 
-status: planned
-result: TBD
+status: observed
+
+result:
+  classifiability: partial
+  stable_axes:
+    initial_mae_stage:
+      note: large 側で early_loss 比率が高い
+    early_retrace_presence:
+      note: no_retrace 側で early_loss 比率が高い
+    immediate_volatility_expansion:
+      note: expanded 側で early_loss 比率が高い
+    time_to_failure_stage:
+      note: early_loss 定義内のため比率 1.0 で固定（整合チェック用途）
+  limitations:
+    immediate_directional_alignment: comparison_not_possible
+  notes:
+    dataset_source: D009 (24h, allow_sell=true)
+    entry_population: unchanged
+    filtering_or_optimization: none
+    outputs: results/family_D_momentum/D014
+
 
 tags:
   - fx
